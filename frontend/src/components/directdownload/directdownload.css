@@ -1,0 +1,260 @@
+.direct-download-container {
+  padding: 20px;
+  max-width: 1000px;
+  margin: 0 auto;
+  color: #fff;
+}
+
+.direct-download-header h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.direct-download-subtitle {
+  margin-top: 6px;
+  color: #aaa;
+  font-size: 14px;
+}
+
+.direct-input-row {
+  display: flex;
+  gap: 16px;
+  margin-top: 20px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.direct-input-group {
+  flex: 1;
+  min-width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.direct-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #ccc;
+}
+
+.direct-input {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.3);
+  color: #fff;
+  font-size: 15px;
+}
+
+.direct-input:focus {
+  outline: none;
+  border-color: #3ea6ff;
+  box-shadow: 0 0 0 2px rgba(62, 166, 255, 0.2);
+}
+
+.direct-select {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.4);
+  color: #fff;
+  font-size: 14px;
+}
+
+.direct-actions-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.direct-primary-btn,
+.direct-secondary-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.direct-primary-btn {
+  background: #27ae60;
+  color: #fff;
+}
+
+.direct-primary-btn:hover:not(:disabled) {
+  background: #2ecc71;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.35);
+}
+
+.direct-secondary-btn {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.direct-secondary-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.direct-primary-btn:disabled,
+.direct-secondary-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.direct-error {
+  margin-top: 10px;
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(231, 76, 60, 0.1);
+  border: 1px solid rgba(231, 76, 60, 0.4);
+  color: #ff6b6b;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.direct-metadata {
+  margin-top: 12px;
+  padding: 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  display: flex;
+  gap: 16px;
+}
+
+.direct-thumb {
+  width: 220px;
+  aspect-ratio: 16/9;
+  border-radius: 8px;
+  object-fit: cover;
+  background: #222;
+}
+
+.direct-meta-info {
+  flex: 1;
+}
+
+.direct-title {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.direct-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.direct-meta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 12px;
+  color: #ccc;
+}
+
+.direct-meta-chip.original-lang {
+  background: rgba(241, 196, 15, 0.12);
+  color: #f1c40f;
+  border: 1px solid rgba(241, 196, 15, 0.3);
+}
+
+.direct-planned-section {
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.direct-columns {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.direct-column {
+  flex: 1;
+  min-width: 260px;
+}
+
+.direct-column h4 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  color: #ddd;
+}
+
+.direct-pill-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.direct-pill {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.3);
+  color: #ccc;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.direct-pill:hover {
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.direct-pill.active {
+  background: rgba(62, 166, 255, 0.1);
+  border-color: #3ea6ff;
+  color: #fff;
+}
+
+.direct-download-footer {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.direct-primary-btn.wide {
+  width: 100%;
+  justify-content: center;
+}
+
+.direct-mini-progress {
+  margin-top: 24px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.direct-mini-progress h3 {
+  font-size: 14px;
+  color: #888;
+  margin: 0 0 12px 0;
+}
+
+@media (max-width: 640px) {
+  .direct-thumb {
+    width: 140px;
+  }
+}
+

@@ -1,0 +1,14 @@
+.download-page {
+  min-height: 100vh;
+  background: var(--bg-primary, #0f0f0f);
+}
+
+.download-content {
+  padding: 2rem;
+}
+
+@media (max-width: 768px) {
+  .download-content {
+    padding: 1rem;
+  }
+}

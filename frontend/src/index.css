@@ -1,0 +1,42 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #0f0f0f;
+  color: #ffffff;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 9px;
+  height: px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0f0f0f;
+}
+
+
+/* just removed it to make side bar hidden */
+
+/* ::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 5px;
+} */
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

@@ -1,0 +1,221 @@
+.sidebar {
+  position: fixed;
+  top: 56px;
+  left: 0;
+  bottom: 0;
+  width: 72px;
+  background-color: #0f0f0f;
+  border-right: 1px solid #303030;
+  overflow-y: auto;
+  transition: width 0.3s ease;
+  z-index: 100;
+}
+
+.sidebar--open {
+  width: 240px;
+}
+
+.sidebar__nav {
+  padding: 12px 0;
+}
+
+.sidebar__section {
+  padding-bottom: 12px;
+}
+
+.sidebar__title {
+  font-size: 16px;
+  font-weight: 500;
+  padding: 8px 24px 6px;
+  color: #aaaaaa;
+  display: none;
+}
+
+.sidebar--open {
+  width: 240px; /* large */
+}
+
+.sidebar--hidden {
+  width: 0;      /* hidden */
+  padding: 0;
+  overflow: hidden;
+}
+
+.sidebar__item {
+  display: flex;
+  align-items: center;
+  padding: 10px 24px;
+  text-decoration: none;
+  color: #ffffff;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.sidebar__item:hover {
+  background-color: #272727;
+}
+
+.sidebar__item.active {
+  background-color: #272727;
+  font-weight: 500;
+}
+
+.sidebar__item.active .sidebar__icon {
+  color: #00f;
+}
+
+.sidebar__icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sidebar--open .sidebar__icon {
+  margin-right: 24px;
+}
+
+.sidebar__label {
+  font-size: 14px;
+  opacity: 0.9;
+  display: none;
+}
+
+.sidebar--open .sidebar__label {
+  display: block;
+}
+
+.sidebar__label-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1;
+  min-width: 0;
+}
+
+.sidebar__badge {
+  background: #ff0000;
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 10px;
+  min-width: 18px;
+  text-align: center;
+  margin-left: 8px;
+}
+
+.sidebar__divider {
+  height: 1px;
+  background-color: #303030;
+  margin: 12px 0;
+}
+
+/* Trash item styling */
+.sidebar__item .sidebar__icon[data-icon="trash2"] {
+  color: #ff6b6b;
+}
+
+.sidebar__item.active .sidebar__icon[data-icon="trash2"] {
+  color: #ff0000;
+}
+
+/* Active state for trash */
+.sidebar__item[href*="/trash"].active {
+  background-color: rgba(255, 107, 107, 0.1);
+  border-left: 3px solid #ff0000;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 0;
+  }
+  
+  .sidebar--open {
+    width: 240px;
+  }
+  
+  /* Make badges more visible on mobile */
+  .sidebar__badge {
+    font-size: 10px;
+    padding: 1px 5px;
+    min-width: 16px;
+  }
+}
+
+/* Scrollbar styling for sidebar */
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: #0f0f0f;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: #303030;
+  border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: #404040;
+}
+
+/* Animation for badge when count changes */
+@keyframes badgePulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.sidebar__badge.pulse {
+  animation: badgePulse 0.3s ease;
+}
+
+/* Active state for sidebar items */
+.sidebar__item.active .sidebar__label {
+  font-weight: 600;
+  color: #ffffff;
+}
+
+/* Hover effects */
+.sidebar__item:hover .sidebar__icon {
+  transform: scale(1.05);
+  transition: transform 0.2s ease;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .sidebar--open {
+    width: 200px;
+  }
+  
+  .sidebar__item {
+    padding: 10px 16px;
+  }
+  
+  .sidebar__icon {
+    margin-right: 16px;
+  }
+  
+  .sidebar__label {
+    font-size: 13px;
+  }
+  
+  .sidebar__title {
+    padding: 8px 16px 6px;
+    font-size: 14px;
+  }
+}
+
+/* Ensure sidebar is above other content on mobile */
+@media (max-width: 768px) {
+  .sidebar--open {
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+  }
+}

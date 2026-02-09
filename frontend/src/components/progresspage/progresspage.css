@@ -1,0 +1,345 @@
+.progress-page-container {
+  padding: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+  color: #fff;
+}
+
+.progress-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.progress-page-header h1 {
+  font-size: 28px;
+  margin: 0;
+  background: linear-gradient(135deg, #fff 0%, #aaa 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.overall-stat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(62, 166, 255, 0.1);
+  color: #3ea6ff;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid rgba(62, 166, 255, 0.2);
+}
+
+.refresh-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.refresh-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.no-downloads {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 100px 0;
+  color: #555;
+  text-align: center;
+}
+
+.no-downloads p {
+  margin-top: 20px;
+  font-size: 18px;
+}
+
+.downloads-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+  gap: 24px;
+}
+
+.download-progress-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  display: flex;
+  gap: 0;
+  transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.download-progress-card:hover {
+  transform: translateY(-4px);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.download-progress-card.downloading {
+  border-color: rgba(62, 166, 255, 0.3);
+  box-shadow: 0 0 20px rgba(62, 166, 255, 0.05);
+}
+
+/* Thumbnail Section */
+.dl-card-thumb-container {
+  width: 240px;
+  min-width: 240px;
+  position: relative;
+  background: #000;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 12px 0 0 12px;
+}
+
+.dl-card-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.8;
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.download-progress-card:hover .dl-card-thumb {
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+.dl-card-thumb-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #333;
+}
+
+.dl-status-overlay {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Content Section */
+.dl-card-content {
+  flex: 1;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.dl-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.dl-header-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dl-time {
+  font-size: 11px;
+  color: #666;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.batch-badge {
+  background: rgba(255, 255, 255, 0.05);
+  color: #aaa;
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  width: fit-content;
+}
+
+.dl-header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.retry-dl-btn {
+  background: rgba(46, 204, 113, 0.1);
+  color: #2ecc71;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.retry-dl-btn:hover {
+  background: #2ecc71;
+  color: white;
+  transform: rotate(-45deg);
+}
+
+.cancel-dl-btn {
+  background: rgba(255, 255, 255, 0.05);
+  color: #aaa;
+  border: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancel-dl-btn:hover {
+  background: #e74c3c;
+  color: white;
+}
+
+.dl-filename {
+  font-weight: 600;
+  font-size: 14px;
+  color: #efefef;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+}
+
+.dl-progress-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dl-progress-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #999;
+}
+
+.dl-progress-bar-bg {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.dl-progress-bar-fill {
+  height: 100%;
+  background: #3ea6ff;
+  border-radius: 2px;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dl-progress-bar-fill.finished { background: #2ecc71; box-shadow: 0 0 10px rgba(46, 204, 113, 0.2); }
+.dl-progress-bar-fill.error { background: #e74c3c; }
+.dl-progress-bar-fill.cancelled { background: #555; }
+
+.dl-footer {
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dl-footer-item {
+  display: flex;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.dl-footer-item .label { color: #555; }
+.dl-footer-item .value { color: #888; }
+
+.dl-error-msg {
+  background: rgba(231, 76, 60, 0.1);
+  color: #ff6b6b;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+.spin {
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive Design - Consolidated */
+@media (max-width: 900px) {
+  .downloads-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .download-progress-card {
+    flex-direction: column;
+  }
+  
+  .dl-card-thumb-container {
+    width: 100%;
+    min-width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 12px 12px 0 0;
+  }
+  
+  /* Optional: Adjust padding for mobile */
+  .progress-page-container {
+    padding: 20px;
+  }
+  
+  .progress-page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+  
+  .header-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

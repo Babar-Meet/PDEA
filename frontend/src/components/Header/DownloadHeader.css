@@ -1,0 +1,59 @@
+.download-header {
+  padding: 1.5rem 2rem;
+  background: var(--bg-secondary, #0f0f0f);
+  justify-content: center;
+  border-bottom: 1px solid var(--border-color, #0f0f0f);
+}
+
+.disclaimer-header {
+  display: flex;
+  /* justify-content: center; */
+}
+
+.disclaimer-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  max-width: 1100px;
+}
+
+.disclaimer-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 90px;
+  height: 90px;
+  background: #f38ba8;
+  border-radius: 10px;
+  color: #1e1e2e;
+}
+
+.disclaimer-text h1 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary, #cdd6f4);
+}
+
+.disclaimer-text p {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text-secondary, #a6adc8);
+}
+
+@media (max-width: 768px) {
+  .download-header {
+    padding: 1rem;
+  }
+
+  .disclaimer-content {
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+  }
+
+  .disclaimer-text p {
+    font-size: 0.875rem;
+  }
+}

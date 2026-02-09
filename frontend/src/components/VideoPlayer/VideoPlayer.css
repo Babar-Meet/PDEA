@@ -1,0 +1,784 @@
+.video-player {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9 ;
+  background-color: #000;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: cursor 0.3s;
+}
+
+.video-player:not(.show-controls) {
+  cursor: none;
+}
+
+.video-player.cinema-mode {
+  aspect-ratio: auto;
+  height: 100%;
+  max-height: 100%;
+  border-radius: 0; /* YouTube's cinema mode usually doesn't have rounded corners */
+}
+
+.video-player__element {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.video-player__controls {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+  padding: 20px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.video-player__controls.visible {
+  opacity: 1;
+}
+
+.video-player__progress {
+  margin-bottom: 15px;
+}
+
+.progress-slider {
+  width: 100%;
+  height: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+.progress-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ff0000;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.progress-slider:hover::-webkit-slider-thumb,
+.progress-slider:active::-webkit-slider-thumb {
+  opacity: 1;
+}
+
+.progress-slider {
+  background: linear-gradient(to right, #ff0000 var(--progress, 0%), rgba(255, 255, 255, 0.3) var(--progress, 0%));
+}
+
+.video-player__controls-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.video-player__left-controls,
+.video-player__right-controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.control-btn {
+  background: none;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.control-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.control-btn:active {
+  transform: scale(0.95);
+}
+
+.control-btn.active {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #3ea6ff;
+}
+
+.volume-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.volume-slider {
+  width: 80px;
+  height: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.volume-control:hover .volume-slider {
+  opacity: 1;
+}
+
+.volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.time-display {
+  color: #ffffff;
+  font-size: 14px;
+  font-family: monospace;
+  font-weight: 500;
+  margin-left: 10px;
+}
+
+.current-speed-display {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 4px;
+  margin-right: 5px;
+}
+
+.quality-display {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  letter-spacing: 0.5px;
+}
+
+/* Animation Overlay Base Styles */
+.animation-overlay {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+/* Center Animation (Play/Pause) */
+.center-animation {
+  left: 0;
+  right: 0;
+  /* background: rgba(0, 0, 0, 0.4); */
+}
+
+.center-animation.active {
+  opacity: 1;
+}
+
+.animation-icon {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: scale(0.8);
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.center-animation.active .animation-icon {
+  transform: scale(1);
+}
+
+/* Play Icon Animation */
+.play-icon-animation {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  margin-left: 5px;
+}
+
+.play-triangle {
+  width: 0;
+  height: 0;
+  border-top: 20px solid transparent;
+  border-bottom: 20px solid transparent;
+  border-left: 35px solid white;
+  transform: scale(0.8);
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.center-animation.active .play-triangle {
+  transform: scale(1);
+}
+
+/* Pause Icon Animation */
+.pause-icon-animation {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.pause-bar {
+  width: 12px;
+  height: 40px;
+  background: white;
+  border-radius: 2px;
+  transform: scaleY(0.8);
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.pause-bar.left {
+  transition-delay: 0.05s;
+}
+
+.pause-bar.right {
+  transition-delay: 0.1s;
+}
+
+.center-animation.active .pause-bar {
+  transform: scaleY(1);
+}
+
+/* Loop Icon Animation */
+.loop-icon-animation {
+  color: white;
+  animation: rotate 1s linear infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Left Skip Animation */
+.left-animation {
+  left: 20px;
+  width: 200px;
+  justify-content: flex-start;
+  /* background: linear-gradient(to right, rgba(0, 0, 0, 0.6), transparent); */
+}
+
+.left-animation.active {
+  opacity: 1;
+}
+
+/* Right Skip Animation */
+.right-animation {
+  right: 20px;
+  width: 200px;
+  justify-content: flex-end;
+  /* background: linear-gradient(to left, rgba(0, 0, 0, 0.6), transparent); */
+}
+
+.right-animation.active {
+  opacity: 1;
+}
+
+.skip-animation-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 20px;
+  opacity: 0;
+  transform: translateX(0) scale(0.8);
+  animation: slideInFade 0.3s ease-out forwards;
+}
+
+@keyframes slideInFade {
+  0% {
+    opacity: 0;
+    transform: translateX(0) scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+.left-animation .skip-animation-content {
+  align-items: center;
+}
+
+.right-animation .skip-animation-content {
+  align-items: center;
+}
+
+.skip-icon {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  animation: pulse 0.6s ease-in-out;
+}
+
+.skip-time {
+  color: white;
+  font-size: 24px;
+  font-weight: 600;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* Speed Indicator */
+.speed-indicator {
+  left: 0;
+  right: 0;
+  bottom: 10px;
+  top: auto;
+  justify-content: center;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.3s ease;
+}
+
+.speed-indicator.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.speed-indicator-content {
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 50px;
+  padding: 9px 9px;
+  text-align: center;
+  min-width: 150px;
+  animation: fadeInUp 0.3s ease-out;
+}
+
+.speed-value {
+  color: white;
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 9px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+}
+
+.speed-label {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Spacebar Tooltip */
+.spacebar-tooltip {
+  position: absolute;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  border-radius: 8px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 300px;
+  z-index: 20;
+  animation: slideUpFade 0.4s ease-out;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@keyframes slideUpFade {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.tooltip-icon {
+  color: #3ea6ff;
+  flex-shrink: 0;
+}
+
+.tooltip-content {
+  flex: 1;
+}
+
+.tooltip-title {
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 2px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+}
+
+.tooltip-text {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.key-highlight {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-weight: 600;
+  color: #3ea6ff;
+  border: 1px solid rgba(62, 166, 255, 0.3);
+}
+
+.speed-highlight {
+  color: #3ea6ff;
+  font-weight: 700;
+}
+
+.tooltip-close {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  font-size: 20px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.tooltip-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+/* Animations */
+@keyframes pulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .video-player__controls {
+    padding: 10px;
+  }
+  
+  .video-player__left-controls,
+  .video-player__right-controls {
+    gap: 10px;
+  }
+  
+  .volume-slider {
+    width: 60px;
+  }
+  
+  .animation-icon {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .play-triangle {
+    border-top: 16px solid transparent;
+    border-bottom: 16px solid transparent;
+    border-left: 24px solid white;
+  }
+  
+  .pause-bar {
+    width: 10px;
+    height: 32px;
+  }
+  
+  .skip-icon {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .skip-icon svg {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .skip-time {
+    font-size: 20px;
+  }
+  
+  .left-animation,
+  .right-animation {
+    width: 150px;
+  }
+  
+  .speed-indicator-content {
+    min-width: 120px;
+    padding: 12px 16px;
+  }
+  
+  .speed-value {
+    font-size: 24px;
+  }
+  
+  .spacebar-tooltip {
+    min-width: 250px;
+    max-width: 90%;
+    padding: 10px 12px;
+    bottom: 70px;
+  }
+  
+  .tooltip-title {
+    font-size: 13px;
+  }
+  
+  .tooltip-text {
+    font-size: 12px;
+  }
+}
+
+/* Speed Control Menu */
+.speed-control-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.speed-display-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.speed-menu {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(28, 28, 28, 0.95);
+  border-radius: 8px;
+  padding: 8px 0;
+  margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 80px;
+  max-height: 300px;
+  overflow-y: auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 20;
+  animation: fadeInUp 0.2s ease-out;
+}
+
+/* Scrollbar for speed menu */
+.speed-menu::-webkit-scrollbar {
+  width: 4px;
+}
+
+.speed-menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.speed-menu::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+}
+
+.speed-menu-item {
+  background: none;
+  border: none;
+  color: #e0e0e0;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.speed-menu-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.speed-menu-item.active {
+  color: #3ea6ff;
+  background-color: rgba(62, 166, 255, 0.1);
+}
+
+.speed-menu-item svg {
+  opacity: 1;
+}
+
+/* Resume Popup */
+.resume-popup {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(28, 28, 28, 0.95);
+  border-radius: 12px;
+  padding: 20px;
+  width: 320px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 50;
+  animation: slideInRight 0.3s ease-out;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.resume-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.resume-title {
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.resume-subtitle {
+  color: #aaaaaa;
+  font-size: 13px;
+}
+
+.resume-close {
+  background: none;
+  border: none;
+  color: #aaaaaa;
+  cursor: pointer;
+  padding: 4px;
+  margin: -4px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.resume-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.resume-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.resume-btn {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.resume-btn.primary {
+  background: #3ea6ff;
+  color: black;
+}
+
+.resume-btn.primary:hover {
+  background: #65b8ff;
+}
+
+.resume-btn.secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.resume-btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.resume-timeout-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: #3ea6ff;
+  width: 0%; /* Starts at 0, animates to 100% */
+  /* Animation handled in JS/inline style or keyframes if fixed duration */
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
