@@ -211,6 +211,74 @@ const PlaylistDownload = () => {
     })
   }, [processingStatus, playlistVideos, videoFormatsMap, activeTab])
 
+  const resolveAutoFormat = (videoId) => {
+    const formatsData = videoFormatsMap[videoId]
+    if (!formatsData || !formatsData.formats) return null
+
+    const vFormats = formatsData.formats
+
+    if (activeTab === 'merge') {
+        // 1. Try Merge (Video Only + Audio Only)
+        let videoFmt = null
+        const videoList = vFormats.video_only || []
+        
+        if (selectedCommonQuality) {
+            videoFmt = videoList.find(f => f.resolution === selectedCommonQuality)
+        }
+        // Fallback to best available if specific resolution not found
+        if (!videoFmt && videoList.length > 0) videoFmt = videoList[0]
+        
+        const audioList = vFormats.audio_only || []
+        const audioFmt = audioList.length > 0 ? audioList[0] : null
+        
+        if (videoFmt && audioFmt) {
+            return {
+                formatId: `${videoFmt.format_id}+${audioFmt.format_id}`,
+                label: `${videoFmt.resolution} (${audioFmt.acodec || audioFmt.ext || 'audio'}) Merge`
+            }
+        }
+        
+        // 2. Fallback to Standard (Video + Audio) if Merge candidates not found
+        let stdFmt = null
+        const stdList = vFormats.video_audio || []
+        
+        if (selectedCommonQuality) {
+            stdFmt = stdList.find(f => f.resolution === selectedCommonQuality)
+        }
+         // Fallback to best available
+        if (!stdFmt && stdList.length > 0) stdFmt = stdList[0]
+        
+        if (stdFmt) {
+            return {
+                formatId: stdFmt.format_id,
+                label: `${stdFmt.resolution} (Standard)`
+            }
+        }
+    } else if (activeTab === 'video_only') {
+        const list = vFormats.video_only || []
+        let fmt = null
+        if (selectedCommonQuality) fmt = list.find(f => f.resolution === selectedCommonQuality)
+        if (!fmt && list.length > 0) fmt = list[0]
+        if (fmt) return { formatId: fmt.format_id, label: fmt.resolution }
+        
+    } else if (activeTab === 'audio_only') {
+        const list = vFormats.audio_only || []
+        let fmt = null
+        if (selectedCommonQuality) fmt = list.find(f => f.ext === selectedCommonQuality)
+        if (!fmt && list.length > 0) fmt = list[0]
+        if (fmt) return { formatId: fmt.format_id, label: fmt.ext }
+
+    } else if (activeTab === 'video_audio') {
+        const list = vFormats.video_audio || []
+        let fmt = null
+        if (selectedCommonQuality) fmt = list.find(f => f.resolution === selectedCommonQuality)
+        if (!fmt && list.length > 0) fmt = list[0]
+        if (fmt) return { formatId: fmt.format_id, label: fmt.resolution }
+    }
+
+    return null
+  }
+
   const handleDownloadAll = async () => {
     if (!selectedCommonQuality && Object.keys(customSelections).length === 0) {
       if (!confirm('No quality selected for some videos. Use best available quality?')) {
@@ -227,58 +295,10 @@ const PlaylistDownload = () => {
       const vFormats = videoFormatsMap[v.id]?.formats || {}
       
       // If no custom selection, try common quality logic
+      // If no custom selection, try common quality logic
       if (!formatId) {
-        if (activeTab === 'merge') {
-            // MERGE: Find Best Video (matching common quality if set) + Best Audio
-            let videoFmt = null
-            const videoList = vFormats.video_only || []
-            
-            if (selectedCommonQuality) {
-                videoFmt = videoList.find(f => f.resolution === selectedCommonQuality)
-            }
-            if (!videoFmt && videoList.length > 0) videoFmt = videoList[0] // Fallback best
-            
-            // Find Best Audio
-            const audioList = vFormats.audio_only || []
-            const audioFmt = audioList.length > 0 ? audioList[0] : null // Assuming sorted by best
-            
-            if (videoFmt && audioFmt) {
-                formatId = `${videoFmt.format_id}+${audioFmt.format_id}`
-            } else if (videoFmt) {
-                formatId = videoFmt.format_id
-            }
-            
-        } else if (activeTab === 'video_only') {
-            // VIDEO ONLY
-            const list = vFormats.video_only || []
-            let fmt = null
-            if (selectedCommonQuality) {
-                fmt = list.find(f => f.resolution === selectedCommonQuality)
-            }
-            if (!fmt && list.length > 0) fmt = list[0]
-            if (fmt) formatId = fmt.format_id
-            
-        } else if (activeTab === 'audio_only') {
-            // AUDIO ONLY
-            const list = vFormats.audio_only || []
-            let fmt = null
-            if (selectedCommonQuality) {
-                // For audio, commonQuality is extension
-                fmt = list.find(f => f.ext === selectedCommonQuality)
-            }
-            if (!fmt && list.length > 0) fmt = list[0]
-            if (fmt) formatId = fmt.format_id
-            
-        } else {
-            // VIDEO + AUDIO (Legacy)
-            const list = vFormats.video_audio || []
-            let fmt = null
-            if (selectedCommonQuality) {
-                fmt = list.find(f => f.resolution === selectedCommonQuality)
-            }
-            if (!fmt && list.length > 0) fmt = list[0]
-            if (fmt) formatId = fmt.format_id
-        }
+        const auto = resolveAutoFormat(v.id)
+        if (auto) formatId = auto.formatId
       }
 
       if (formatId) {
@@ -501,11 +521,10 @@ const PlaylistDownload = () => {
                      const startFmt = all.find(f => f.format_id === customSelections[video.id])
                      effectiveQuality = startFmt ? (startFmt.resolution !== 'N/A' ? startFmt.resolution : startFmt.ext) : 'Custom'
                   }
-                } else if (selectedCommonQuality) {
-                  effectiveQuality = `${selectedCommonQuality} (${activeTab.replace('_', ' ')})`
                 } else {
-                  // Fallback description
-                  effectiveQuality = activeTab === 'merge' ? 'Best Merge' : 'Best Available'
+                  // Auto-selected description
+                  const auto = resolveAutoFormat(video.id)
+                  effectiveQuality = auto ? auto.label : 'N/A'
                 }
               }
               
@@ -724,5 +743,6 @@ const PlaylistDownload = () => {
     </div>
   )
 }
+
 
 export default PlaylistDownload
