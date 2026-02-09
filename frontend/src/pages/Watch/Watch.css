@@ -18,7 +18,7 @@
 .watch.cinema-mode .watch__player {
   grid-area: player;
   margin-bottom: 20px;
-  max-height: calc(100vh - 90px);
+  max-height: calc(100vh - 163px);
   display: flex;
   justify-content: center;
   background-color: #000;
