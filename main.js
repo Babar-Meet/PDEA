@@ -20,13 +20,16 @@ function createWindow() {
 
   // Load the app
   // In production, this would be a file URL. In dev, it's localhost.
-  const startUrl = process.env.ELECTRON_START_URL || 'http://localhost:5173';
+  // In production, this points to the backend server which serves the frontend
+  const startUrl = process.env.ELECTRON_START_URL || 'http://localhost:5000';
   mainWindow.loadURL(startUrl);
 
   mainWindow.on('closed', function () {
     mainWindow = null;
   });
 }
+
+app.setJumpList(null); // Fix for Windows Jump List error
 
 app.on('ready', () => {
     // Set up session permissions for downloads if needed

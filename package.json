@@ -1,12 +1,13 @@
 {
   "name": "yt-local-electron",
   "version": "1.0.0",
-  "main": "electron.js",
+  "main": "main.js",
   "scripts": {
-    "start": "concurrently \"npm run backend\" \"npm run frontend\" \"wait-on http://localhost:5173 && electron .\"",
+    "start": "concurrently \"npm run backend\" \"wait-on http://localhost:5000 && electron .\"",
+    "build-frontend": "cd frontend && npm run build",
     "backend": "cd backend && npm start",
     "frontend": "cd frontend && npm run dev",
-    "build": "electron-builder"
+    "build": "npm run build-frontend && electron-builder"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",

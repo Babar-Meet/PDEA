@@ -39,6 +39,14 @@ app.use('/api/health', healthRoutes);
 app.use('/api/download', downloadRoutes);
 app.use('/api/ambience', ambienceRoutes);
 
+// Serve frontend in production
+const frontendBuildPath = path.join(__dirname, '../frontend/dist');
+app.use(express.static(frontendBuildPath));
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(frontendBuildPath, 'index.html'));
+});
+
 // Start server
 app.listen(PORT, '0.0.0.0', () => {
   const networkInterfaces = require('os').networkInterfaces();
