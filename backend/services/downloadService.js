@@ -16,6 +16,16 @@ const getYtDlpPath = () => {
   return 'yt-dlp';
 };
 
+const sanitizeFilename = (filename) => {
+  return filename
+    .replace(/[<>:"\/\\|?*]/g, '')
+    .replace(/[\x00-\x1F\x7F]/g, '')
+    .replace(/^\.+/, '')
+    .replace(/\.+$/, '')
+    .trim()
+    .substring(0, 200) || 'video';
+};
+
 const queue = [];
 let activeDownloadsCount = 0;
 const settingsPath = path.join(publicDir, 'download_settings.json');
@@ -562,9 +572,11 @@ class DownloadService {
   startDownload(url, formatId, saveDir = 'Not Watched', metadata = {}) {
     const downloadId = uuidv4();
     
+    const safeTitle = metadata.title ? sanitizeFilename(metadata.title) : null;
+    
     downloadManager.registerDownload(downloadId, {
-      filename: metadata.title || null,
-      title: metadata.title || null,
+      filename: safeTitle,
+      title: safeTitle,
       thumbnail: metadata.thumbnail || null,
       batchId: metadata.batchId || null,
       index: metadata.index,
@@ -600,6 +612,7 @@ class DownloadService {
       '--fragment-retries', '10',
       '--socket-timeout', '30',
       '--no-mtime',
+      '--restrict-filenames',
       url
     ];
 
@@ -759,6 +772,7 @@ class DownloadService {
       '--fragment-retries', '10',
       '--socket-timeout', '30',
       '--no-mtime',
+      '--restrict-filenames',
       status.url
     ];
 
