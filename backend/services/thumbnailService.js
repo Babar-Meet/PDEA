@@ -246,3 +246,7 @@ exports.getThumbnailState = () => {
 exports.getThumbnailsNeededCount = (videoFiles) => {
   return getVideosNeedingThumbnails(videoFiles).length;
 };
+
+// Export internal functions for use in other services
+exports.findThumbnailAnywhere = findThumbnailAnywhere;
+exports.doesThumbnailExist = doesThumbnailExist;

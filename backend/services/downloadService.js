@@ -3,6 +3,8 @@ const path = require('path');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const downloadManager = require('./DownloadManager');
+const thumbnailService = require('./thumbnailService');
+
 
 const publicDir = path.join(__dirname, '../public');
 const thumbnailsDir = path.join(publicDir, 'thumbnails');
@@ -20,8 +22,6 @@ const sanitizeFilename = (filename) => {
   return filename
     .replace(/[<>:"\/\\|?*]/g, '')
     .replace(/[\x00-\x1F\x7F]/g, '')
-    .replace(/^\.+/, '')
-    .replace(/\.+$/, '')
     .trim()
     .substring(0, 200) || 'video';
 };
@@ -599,22 +599,35 @@ class DownloadService {
     const prefix = metadata.index !== undefined ? `${metadata.index.toString().padStart(2, '0')} ` : '';
     const outputTemplate = path.join(outputDir, `${prefix}%(title)s.%(ext)s`);
 
+    // Check if thumbnail already exists anywhere in the system
+    const titleForCheck = metadata.title || 'video';
+    const thumbnailExists = thumbnailService.doesThumbnailExist({
+      relativePath: path.join(saveDir, `${prefix}${titleForCheck}.mp4`)
+    });
+
     const args = [
       '-f', formatId,
       '-o', outputTemplate,
       '--no-playlist',
 '--extractor-args', 'youtube:player_client=web,web_safari,web_embedded,web_music,web_creator,mweb,ios,android,android_vr,tv,tv_simply,tv_embedded',
       '--newline',
-      '--write-thumbnail',
-      '--convert-thumbnails', 'jpg',
-      '--output', `thumbnail:${path.join(targetThumbDir, `${prefix}%(title)s`)}`,
+    ];
+
+    if (!thumbnailExists) {
+      args.push('--write-thumbnail');
+      args.push('--convert-thumbnails', 'jpg');
+      args.push('--output', `thumbnail:${path.join(targetThumbDir, `${prefix}%(title)s.%(ext)s`)}`);
+    }
+
+    args.push(
       '--retries', '10',
       '--fragment-retries', '10',
       '--socket-timeout', '30',
       '--no-mtime',
       '--restrict-filenames',
       url
-    ];
+    );
+
 
     
     if (formatId.includes('+')) {
@@ -759,22 +772,35 @@ class DownloadService {
     const prefix = status.index !== undefined ? `${status.index.toString().padStart(2, '0')} ` : '';
     const outputTemplate = path.join(outputDir, `${prefix}%(title)s.%(ext)s`);
 
+    // Check if thumbnail already exists anywhere in the system
+    const titleForCheck = status.title || 'video';
+    const thumbnailExists = thumbnailService.doesThumbnailExist({
+      relativePath: path.join(status.saveDir, `${prefix}${titleForCheck}.mp4`)
+    });
+
     const args = [
       '-f', status.formatId,
       '-o', outputTemplate,
       '--no-playlist',
 '--extractor-args', 'youtube:player_client=web,web_safari,web_embedded,web_music,web_creator,mweb,ios,android,android_vr,tv,tv_simply,tv_embedded',
       '--newline',
-      '--write-thumbnail',
-      '--convert-thumbnails', 'jpg',
-      '--output', `thumbnail:${path.join(targetThumbDir, `${prefix}%(title)s`)}`,
+    ];
+
+    if (!thumbnailExists) {
+      args.push('--write-thumbnail');
+      args.push('--convert-thumbnails', 'jpg');
+      args.push('--output', `thumbnail:${path.join(targetThumbDir, `${prefix}%(title)s.%(ext)s`)}`);
+    }
+
+    args.push(
       '--retries', '10',
       '--fragment-retries', '10',
       '--socket-timeout', '30',
       '--no-mtime',
       '--restrict-filenames',
       status.url
-    ];
+    );
+
 
     if (status.formatId.includes('+')) {
        args.push('--merge-output-format', 'mp4');
