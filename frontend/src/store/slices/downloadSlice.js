@@ -147,6 +147,13 @@ const downloadSlice = createSlice({
     clearVideoData: (state) => {
       state.simpleVideoData = null;
       state.directVideoData = null;
+    },
+    updateDownloadProgress: (state, action) => {
+      const { downloadId, ...updates } = action.payload;
+      const index = state.downloads.findIndex(d => d.id === downloadId);
+      if (index !== -1) {
+        state.downloads[index] = { ...state.downloads[index], ...updates };
+      }
     }
   },
   extraReducers: (builder) => {
@@ -164,6 +171,6 @@ const downloadSlice = createSlice({
 });
 
 
-export const { setSimpleVideoData, setDirectVideoData, clearVideoData } = downloadSlice.actions;
+export const { setSimpleVideoData, setDirectVideoData, clearVideoData, updateDownloadProgress } = downloadSlice.actions;
 
 export default downloadSlice.reducer;

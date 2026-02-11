@@ -1,62 +1,100 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchDownloads, fetchSettings } from '../../store/slices/downloadSlice';
+import { fetchDownloads, fetchSettings, updateDownloadProgress } from '../../store/slices/downloadSlice';
+import { API_BASE_URL } from '../../config';
 
-/**
- * Polls download status in the background, ensuring downloads continue
- * even when navigating between pages. Uses aggressive polling (2s) when
- * active downloads are detected, and safety polling (10s) otherwise to
- * catch any downloads that might be running on the server but not yet
- * reflected in the Redux state.
- */
 const DownloadPoller = () => {
   const dispatch = useDispatch();
   const downloads = useSelector((state) => state.download.downloads);
-  const activePollIntervalRef = useRef(null);
-  const safetyPollIntervalRef = useRef(null);
+  const wsRef = useRef(null);
+  const reconnectTimeoutRef = useRef(null);
+  const [wsConnected, setWsConnected] = useState(false);
 
-  const hasActive = downloads.some((d) =>
-    ['downloading', 'starting', 'queued'].includes(d.status)
-  );
-
-  // Active polling: Poll every 2 seconds when there are active downloads
-  useEffect(() => {
-    if (hasActive && !activePollIntervalRef.current) {
-      // Start aggressive polling
-      activePollIntervalRef.current = setInterval(() => {
-        dispatch(fetchDownloads());
-      }, 2000);
-    } else if (!hasActive && activePollIntervalRef.current) {
-      // Stop aggressive polling when no active downloads
-      clearInterval(activePollIntervalRef.current);
-      activePollIntervalRef.current = null;
+  const connectWebSocket = useCallback(() => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      return;
     }
-  }, [hasActive, dispatch]);
 
-  // Safety polling: Always poll every 10 seconds to catch any "lost" downloads
-  // This ensures that if a download is running on the server but the Redux state
-  // somehow lost track of it (e.g., during page navigation), we'll pick it up
-  useEffect(() => {
-    safetyPollIntervalRef.current = setInterval(() => {
-      dispatch(fetchDownloads());
-    }, 10000);
+    const wsUrl = API_BASE_URL.replace('http://', 'ws://').replace('https://', 'wss://') + '/ws/downloads';
+    
+    try {
+      const ws = new WebSocket(wsUrl);
 
-    return () => {
-      if (safetyPollIntervalRef.current) {
-        clearInterval(safetyPollIntervalRef.current);
-      }
-    };
+      ws.onopen = () => {
+        console.log('WebSocket connected');
+        setWsConnected(true);
+        if (reconnectTimeoutRef.current) {
+          clearTimeout(reconnectTimeoutRef.current);
+          reconnectTimeoutRef.current = null;
+        }
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.type === 'progress' && data.downloadId) {
+            dispatch(updateDownloadProgress({
+              downloadId: data.downloadId,
+              progress: data.progress,
+              speed: data.speed,
+              eta: data.eta,
+              status: data.status,
+              filename: data.filename,
+              error: data.error
+            }));
+          }
+        } catch (error) {
+          console.error('Failed to parse WebSocket message:', error);
+        }
+      };
+
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+      };
+
+      ws.onclose = () => {
+        console.log('WebSocket disconnected');
+        setWsConnected(false);
+        wsRef.current = null;
+        
+        reconnectTimeoutRef.current = setTimeout(() => {
+          console.log('Attempting to reconnect WebSocket...');
+          connectWebSocket();
+        }, 3000);
+      };
+
+      wsRef.current = ws;
+    } catch (error) {
+      console.error('Failed to create WebSocket:', error);
+      reconnectTimeoutRef.current = setTimeout(() => {
+        connectWebSocket();
+      }, 3000);
+    }
   }, [dispatch]);
 
-  // Initial fetch on mount
+  useEffect(() => {
+    connectWebSocket();
+
+    return () => {
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+      }
+      if (wsRef.current) {
+        wsRef.current.close();
+      }
+    };
+  }, [connectWebSocket]);
+
   useEffect(() => {
     dispatch(fetchDownloads());
     dispatch(fetchSettings());
 
+    const safetyInterval = setInterval(() => {
+      dispatch(fetchDownloads());
+    }, 30000);
+
     return () => {
-      if (activePollIntervalRef.current) {
-        clearInterval(activePollIntervalRef.current);
-      }
+      clearInterval(safetyInterval);
     };
   }, [dispatch]);
 
