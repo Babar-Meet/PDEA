@@ -745,8 +745,8 @@ class DownloadService {
     process.on('close', (code) => {
       const processData = downloadManager.processes.get(downloadId);
       
-      if (processData && processData.cancelled) {
-        // Notify subscription service about cancelled download
+      if (processData && (processData.cancelled || processData.paused)) {
+        // Notify subscription service about cancelled/paused download
         if (typeof subscriptionService.decrementActiveDownloads === 'function') {
           subscriptionService.decrementActiveDownloads();
         }
@@ -845,6 +845,14 @@ class DownloadService {
     
     downloadManager.removeDownload(id);
     return true;
+  }
+
+  pauseDownload(id) {
+    return downloadManager.pauseDownload(id);
+  }
+
+  resumeDownload(id) {
+    return downloadManager.resumeDownload(id);
   }
 
   getDownloadStatus(id) {

@@ -162,6 +162,44 @@ export const removeDownload = createAsyncThunk(
   }
 );
 
+export const pauseDownload = createAsyncThunk(
+  'download/pauseDownload',
+  async (id, { dispatch, rejectWithValue }) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/download/pause/${id}`, {
+        method: 'POST',
+      });
+      const data = await res.json();
+      if (data.success) {
+        dispatch(fetchDownloads());
+        return true;
+      }
+      return rejectWithValue(data.error);
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
+export const resumeDownload = createAsyncThunk(
+  'download/resumeDownload',
+  async (id, { dispatch, rejectWithValue }) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/download/resume/${id}`, {
+        method: 'POST',
+      });
+      const data = await res.json();
+      if (data.success) {
+        dispatch(fetchDownloads());
+        return true;
+      }
+      return rejectWithValue(data.error);
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
 const initialState = {
   downloads: [],
   settings: { maxConcurrentPlaylistDownloads: 3 },

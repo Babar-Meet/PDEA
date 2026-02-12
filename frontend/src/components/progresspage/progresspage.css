@@ -81,6 +81,42 @@
   cursor: not-allowed;
 }
 
+.pause-all-btn {
+  background: rgba(241, 196, 15, 0.2);
+  border: 1px solid rgba(241, 196, 15, 0.3);
+  color: #f1c40f;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.pause-all-btn:hover {
+  background: rgba(241, 196, 15, 0.3);
+}
+
+.resume-all-btn {
+  background: rgba(46, 204, 113, 0.2);
+  border: 1px solid rgba(46, 204, 113, 0.3);
+  color: #2ecc71;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.resume-all-btn:hover {
+  background: rgba(46, 204, 113, 0.3);
+}
+
 .cleanup-message {
   background: rgba(46, 204, 113, 0.1);
   border: 1px solid rgba(46, 204, 113, 0.2);
@@ -266,6 +302,54 @@
   color: white;
 }
 
+.pause-dl-btn {
+  background: rgba(241, 196, 15, 0.1);
+  color: #f1c40f;
+  border: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pause-dl-btn:hover {
+  background: #f1c40f;
+  color: white;
+}
+
+.pause-dl-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.resume-dl-btn {
+  background: rgba(46, 204, 113, 0.1);
+  color: #2ecc71;
+  border: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.resume-dl-btn:hover {
+  background: #2ecc71;
+  color: white;
+}
+
+.resume-dl-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .remove-dl-btn {
   background: rgba(231, 76, 60, 0.1);
   color: #e74c3c;
@@ -338,6 +422,7 @@
 .dl-progress-bar-fill.finished { background: #2ecc71; box-shadow: 0 0 10px rgba(46, 204, 113, 0.2); }
 .dl-progress-bar-fill.error { background: #e74c3c; }
 .dl-progress-bar-fill.cancelled { background: #555; }
+.dl-progress-bar-fill.paused { background: #f39c12; }
 
 .dl-footer {
   margin-top: auto;

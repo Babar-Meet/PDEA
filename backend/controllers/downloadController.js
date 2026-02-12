@@ -146,6 +146,26 @@ exports.removeDownload = (req, res) => {
   }
 };
 
+exports.pauseDownload = (req, res) => {
+  try {
+    const { id } = req.params;
+    const success = downloadService.pauseDownload(id);
+    res.json({ success });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+exports.resumeDownload = (req, res) => {
+  try {
+    const { id } = req.params;
+    const success = downloadService.resumeDownload(id);
+    res.json({ success });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
 exports.cleanupOrphanedFiles = (req, res) => {
   try {
     const result = downloadManager.cleanupOrphanedFiles();

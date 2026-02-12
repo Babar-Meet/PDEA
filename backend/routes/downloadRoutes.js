@@ -33,6 +33,12 @@ router.post('/retry/:id', downloadController.retryDownload);
 // Remove a download from history
 router.post('/remove/:id', downloadController.removeDownload);
 
+// Pause a download
+router.post('/pause/:id', downloadController.pauseDownload);
+
+// Resume a paused download
+router.post('/resume/:id', downloadController.resumeDownload);
+
 // Cleanup orphaned temp files
 router.post('/cleanup', downloadController.cleanupOrphanedFiles);
 
