@@ -141,7 +141,7 @@ class DownloadManager {
     // Immediately remove from processes map so close handler knows it's cancelled
     this.processes.delete(downloadId);
 
-    // Forcefully kill the process
+    // Forcefully kill ONLY this specific process
     if (pid) {
       this.forceKillProcess(pid);
     } else {
@@ -150,17 +150,6 @@ class DownloadManager {
       } catch (e) {
         // Ignore
       }
-    }
-
-    // Also kill any yt-dlp processes by name
-    try {
-      if (process.platform === 'win32') {
-        execSync(`taskkill /F /IM yt-dlp.exe 2>nul`, { stdio: 'ignore' });
-      } else {
-        execSync(`pkill -9 yt-dlp 2>/dev/null`, { stdio: 'ignore' });
-      }
-    } catch (e) {
-      // Ignore errors
     }
 
     // Update status immediately to 'cancelled'
@@ -215,17 +204,6 @@ class DownloadManager {
       } catch (e) {
         // Ignore
       }
-    }
-
-    // Also kill any yt-dlp processes by name
-    try {
-      if (process.platform === 'win32') {
-        execSync(`taskkill /F /IM yt-dlp.exe 2>nul`, { stdio: 'ignore' });
-      } else {
-        execSync(`pkill -9 yt-dlp 2>/dev/null`, { stdio: 'ignore' });
-      }
-    } catch (e) {
-      // Ignore errors
     }
 
     // Now remove from processes map after killing
@@ -329,10 +307,14 @@ class DownloadManager {
 
     // Start the download again - yt-dlp will resume from .part file automatically
     const downloadService = require('./downloadService');
+    
+    // Make sure format_id is valid
+    const formatId = pausedInfo.format_id || 'best';
+    
     try {
       const newDownloadId = downloadService.startDownload(
         pausedInfo.url,
-        pausedInfo.format_id,
+        formatId,
         pausedInfo.save_dir,
         {
           title: pausedInfo.title,
@@ -396,10 +378,13 @@ class DownloadManager {
       // Remove from downloads map
       this.downloads.delete(pausedInfo.downloadId);
       
+      // Make sure format_id is valid
+      const formatId = pausedInfo.format_id || 'best';
+      
       try {
         downloadService.startDownload(
           pausedInfo.url,
-          pausedInfo.format_id,
+          formatId,
           pausedInfo.save_dir,
           {
             title: pausedInfo.title,
