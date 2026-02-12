@@ -19,10 +19,12 @@ import {
 import './progresspage.css';
 
 const ProgressPage = () => {
-  const { downloads, cancelDownload, fetchDownloads, retryDownload, cleanupOrphanedFiles, cleanupMessage, clearCleanupMessage, removeDownload } = useDownload();
+  const { downloads, cancelDownload, fetchDownloads, retryDownload, cleanupOrphanedFiles, cleanupMessage, clearCleanupMessage, removeDownload, pauseDownload, resumeDownload, pauseAllDownloads, resumeAllDownloads, fetchPausedCount } = useDownload();
   const [cancellingIds, setCancellingIds] = useState(new Set());
-  const [cleaning, setCleaning] = useState(false);
+  const [cleaning, setCleaning] = useState(new Set());
   const [removingIds, setRemovingIds] = useState(new Set());
+  const [pausingIds, setPausingIds] = useState(new Set());
+  const [resumingIds, setResumingIds] = useState(new Set());
 
   // Clear cleanup message after 5 seconds
   useEffect(() => {
@@ -87,6 +89,58 @@ const ProgressPage = () => {
     }
   }, [cancelDownload, fetchDownloads, cancellingIds]);
 
+  const handlePause = useCallback(async (id) => {
+    // Prevent multiple pause clicks
+    if (pausingIds.has(id)) return;
+    
+    setPausingIds(prev => new Set(prev).add(id));
+    
+    try {
+      await pauseDownload(id);
+      setPausingIds(prev => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+      setTimeout(() => {
+        fetchDownloads();
+      }, 300);
+    } catch (error) {
+      console.error('Pause failed:', error);
+      setPausingIds(prev => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    }
+  }, [pauseDownload, fetchDownloads, pausingIds]);
+
+  const handleResume = useCallback(async (id) => {
+    // Prevent multiple resume clicks
+    if (resumingIds.has(id)) return;
+    
+    setResumingIds(prev => new Set(prev).add(id));
+    
+    try {
+      await resumeDownload(id);
+      setResumingIds(prev => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+      setTimeout(() => {
+        fetchDownloads();
+      }, 300);
+    } catch (error) {
+      console.error('Resume failed:', error);
+      setResumingIds(prev => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    }
+  }, [resumeDownload, fetchDownloads, resumingIds]);
+
   const handleRetry = useCallback(async (id) => {
     try {
       await retryDownload(id);
@@ -104,25 +158,85 @@ const ProgressPage = () => {
   }, [fetchDownloads]);
 
   const handleCleanup = useCallback(async () => {
-    if (cleaning) return;
+    if (cleaning.has('cleanup')) return;
     
-    setCleaning(true);
+    setCleaning(prev => new Set(prev).add('cleanup'));
     try {
       const success = await cleanupOrphanedFiles();
       if (success) {
         // Fetch fresh data instead of reloading
         setTimeout(() => {
           fetchDownloads();
-          setCleaning(false);
+          setCleaning(prev => {
+            const next = new Set(prev);
+            next.delete('cleanup');
+            return next;
+          });
         }, 500);
       } else {
-        setCleaning(false);
+        setCleaning(prev => {
+          const next = new Set(prev);
+          next.delete('cleanup');
+          return next;
+        });
       }
     } catch (error) {
       console.error('Cleanup failed:', error);
-      setCleaning(false);
+      setCleaning(prev => {
+        const next = new Set(prev);
+        next.delete('cleanup');
+        return next;
+      });
     }
   }, [cleanupOrphanedFiles, fetchDownloads, cleaning]);
+
+  const handlePauseAll = useCallback(async () => {
+    if (cleaning.has('pauseAll')) return;
+    
+    setCleaning(prev => new Set(prev).add('pauseAll'));
+    try {
+      await pauseAllDownloads();
+      setCleaning(prev => {
+        const next = new Set(prev);
+        next.delete('pauseAll');
+        return next;
+      });
+      setTimeout(() => {
+        fetchDownloads();
+      }, 300);
+    } catch (error) {
+      console.error('Pause all failed:', error);
+      setCleaning(prev => {
+        const next = new Set(prev);
+        next.delete('pauseAll');
+        return next;
+      });
+    }
+  }, [pauseAllDownloads, fetchDownloads, cleaning]);
+
+  const handleResumeAll = useCallback(async () => {
+    if (cleaning.has('resumeAll')) return;
+    
+    setCleaning(prev => new Set(prev).add('resumeAll'));
+    try {
+      await resumeAllDownloads();
+      setCleaning(prev => {
+        const next = new Set(prev);
+        next.delete('resumeAll');
+        return next;
+      });
+      setTimeout(() => {
+        fetchDownloads();
+      }, 300);
+    } catch (error) {
+      console.error('Resume all failed:', error);
+      setCleaning(prev => {
+        const next = new Set(prev);
+        next.delete('resumeAll');
+        return next;
+      });
+    }
+  }, [resumeAllDownloads, fetchDownloads, cleaning]);
 
   const handleRemove = useCallback(async (id) => {
     // Prevent multiple remove clicks
@@ -148,6 +262,7 @@ const ProgressPage = () => {
 
   // Calculate counts
   const activeCount = downloads.filter(d => ['downloading', 'starting', 'queued'].includes(d.status)).length;
+  const pausedCount = downloads.filter(d => d.status === 'paused').length;
 
   return (
     <div className="progress-page-container">
@@ -160,14 +275,34 @@ const ProgressPage = () => {
                  {activeCount} Active
               </div>
            )}
-          <button 
-            className="cleanup-btn" 
-            onClick={handleCleanup}
-            disabled={cleaning}
-            title="Clean up temporary files"
-          >
-            <AxeIcon size={16} /> {cleaning ? 'Cleaning...' : 'Cleanup'}
-          </button>
+           {pausedCount > 0 && (
+              <button 
+                className="resume-all-btn" 
+                onClick={handleResumeAll}
+                disabled={cleaning.has('resumeAll')}
+                title="Resume all paused downloads"
+              >
+                <Play size={16} /> {cleaning.has('resumeAll') ? 'Resuming...' : `Resume All (${pausedCount})`}
+              </button>
+           )}
+           {activeCount > 0 && (
+              <button 
+                className="pause-all-btn" 
+                onClick={handlePauseAll}
+                disabled={cleaning.has('pauseAll')}
+                title="Pause all active downloads"
+              >
+                <Pause size={16} /> {cleaning.has('pauseAll') ? 'Pausing...' : 'Pause All'}
+              </button>
+           )}
+           <button 
+             className="cleanup-btn" 
+             onClick={handleCleanup}
+             disabled={cleaning.has('cleanup')}
+             title="Clean up temporary files"
+           >
+             <AxeIcon size={16} /> {cleaning.has('cleanup') ? 'Cleaning...' : 'Cleanup'}
+           </button>
           <button className="refresh-btn" onClick={handleRefresh}>
             <RefreshCw size={16} /> Refresh
           </button>
@@ -223,16 +358,44 @@ const ProgressPage = () => {
                       </button>
                     )}
                     {(['downloading', 'starting', 'queued'].includes(dl.status)) && (
+                      <>
+                        <button 
+                          className="pause-dl-btn" 
+                          onClick={() => handlePause(dl.id)}
+                          title="Pause Download"
+                          disabled={pausingIds.has(dl.id)}
+                        >
+                          {pausingIds.has(dl.id) ? (
+                            <RefreshCw size={16} className="spin" />
+                          ) : (
+                            <Pause size={16} />
+                          )}
+                        </button>
+                        <button 
+                          className="cancel-dl-btn" 
+                          onClick={() => handleCancel(dl.id)}
+                          title="Cancel Download"
+                          disabled={cancellingIds.has(dl.id)}
+                        >
+                          {cancellingIds.has(dl.id) ? (
+                            <RefreshCw size={16} className="spin" />
+                          ) : (
+                            <X size={16} />
+                          )}
+                        </button>
+                      </>
+                    )}
+                    {dl.status === 'paused' && (
                       <button 
-                        className="cancel-dl-btn" 
-                        onClick={() => handleCancel(dl.id)}
-                        title="Cancel Download"
-                        disabled={cancellingIds.has(dl.id)}
+                        className="resume-dl-btn" 
+                        onClick={() => handleResume(dl.id)}
+                        title="Resume Download"
+                        disabled={resumingIds.has(dl.id)}
                       >
-                        {cancellingIds.has(dl.id) ? (
+                        {resumingIds.has(dl.id) ? (
                           <RefreshCw size={16} className="spin" />
                         ) : (
-                          <X size={16} />
+                          <Play size={16} />
                         )}
                       </button>
                     )}
@@ -288,6 +451,11 @@ const ProgressPage = () => {
                   {dl.status === 'cancelled' && (
                     <div className="dl-error-msg">
                       Cancelled by user
+                    </div>
+                  )}
+                  {dl.status === 'paused' && (
+                    <div className="dl-paused-msg">
+                      Paused by user
                     </div>
                   )}
                 </div>

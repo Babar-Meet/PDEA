@@ -27,6 +27,21 @@ router.get('/all', downloadController.getAllDownloads);
 // Cancel a download
 router.post('/cancel/:id', downloadController.cancelDownload);
 
+// Pause a download
+router.post('/pause/:id', downloadController.pauseDownload);
+
+// Resume a paused download
+router.post('/resume/:id', downloadController.resumeDownload);
+
+// Pause all downloads
+router.post('/pause-all', downloadController.pauseAllDownloads);
+
+// Resume all paused downloads
+router.post('/resume-all', downloadController.resumeAllDownloads);
+
+// Get paused downloads count
+router.get('/paused-count', downloadController.getPausedDownloadsCount);
+
 // Retry a download
 router.post('/retry/:id', downloadController.retryDownload);
 

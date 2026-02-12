@@ -6,6 +6,11 @@ import {
   startDownload as startDownloadThunk,
   startDirectDownload as startDirectDownloadThunk,
   cancelDownload as cancelDownloadThunk,
+  pauseDownload as pauseDownloadThunk,
+  resumeDownload as resumeDownloadThunk,
+  pauseAllDownloads as pauseAllDownloadsThunk,
+  resumeAllDownloads as resumeAllDownloadsThunk,
+  fetchPausedCount as fetchPausedCountThunk,
   retryDownload as retryDownloadThunk,
   removeDownload as removeDownloadThunk,
   cleanupOrphanedFiles as cleanupOrphanedFilesThunk,
@@ -22,6 +27,7 @@ export const useDownload = () => {
   const simpleVideoData = useSelector((state) => state.download.simpleVideoData);
   const directVideoData = useSelector((state) => state.download.directVideoData);
   const cleanupMessage = useSelector((state) => state.download.cleanupMessage);
+  const pausedCount = useSelector((state) => state.download.pausedCount);
 
   const startDirectDownload = async (payload) => {
     try {
@@ -48,6 +54,51 @@ export const useDownload = () => {
   const cancelDownload = async (id) => {
     try {
       await dispatch(cancelDownloadThunk(id)).unwrap();
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const pauseDownload = async (id) => {
+    try {
+      await dispatch(pauseDownloadThunk(id)).unwrap();
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const resumeDownload = async (id) => {
+    try {
+      await dispatch(resumeDownloadThunk(id)).unwrap();
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const pauseAllDownloads = async () => {
+    try {
+      await dispatch(pauseAllDownloadsThunk()).unwrap();
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const resumeAllDownloads = async () => {
+    try {
+      await dispatch(resumeAllDownloadsThunk()).unwrap();
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const fetchPausedCount = async () => {
+    try {
+      await dispatch(fetchPausedCountThunk()).unwrap();
       return true;
     } catch {
       return false;
@@ -98,6 +149,12 @@ export const useDownload = () => {
     startDownload,
     startDirectDownload,
     cancelDownload,
+    pauseDownload,
+    resumeDownload,
+    pauseAllDownloads,
+    resumeAllDownloads,
+    fetchPausedCount,
+    pausedCount,
     fetchDownloads: () => dispatch(fetchDownloadsThunk()),
     retryDownload,
     updateSettings,

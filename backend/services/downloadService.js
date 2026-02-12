@@ -839,6 +839,26 @@ class DownloadService {
     return downloadManager.cancelDownload(id);
   }
 
+  pauseDownload(id) {
+    return downloadManager.pauseDownload(id);
+  }
+
+  resumeDownload(id) {
+    return downloadManager.resumeDownload(id);
+  }
+
+  pauseAllDownloads() {
+    return downloadManager.pauseAllDownloads();
+  }
+
+  resumeAllDownloads() {
+    return downloadManager.resumeAllDownloads();
+  }
+
+  getPausedDownloadsCount() {
+    return downloadManager.getPausedDownloadsCount();
+  }
+
   removeDownload(id) {
     const download = downloadManager.getDownload(id);
     if (!download) return false;

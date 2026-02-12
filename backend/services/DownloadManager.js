@@ -179,6 +179,256 @@ class DownloadManager {
     return true;
   }
 
+  /**
+   * Pause a download by saving its info for later resume
+   * Does NOT clean up temp files - they will be used for resume
+   */
+  async pauseDownload(downloadId) {
+    const processData = this.processes.get(downloadId);
+    if (!processData) {
+      // Check if download exists but no process running
+      const download = this.downloads.get(downloadId);
+      if (download) {
+        this.updateProgress(downloadId, {
+          status: 'paused',
+          error: 'Download paused by user'
+        });
+      }
+      return false;
+    }
+
+    // Mark as paused to prevent any further progress updates
+    processData.paused = true;
+    
+    const { process, filePath } = processData;
+    const pid = process.pid;
+    
+    // Remove from processes map so close handler knows it's paused
+    this.processes.delete(downloadId);
+
+    // Forcefully kill the process (same as cancel)
+    if (pid) {
+      this.forceKillProcess(pid);
+    } else {
+      try {
+        process.kill('SIGKILL');
+      } catch (e) {
+        // Ignore
+      }
+    }
+
+    // Also kill any yt-dlp processes by name
+    try {
+      if (process.platform === 'win32') {
+        execSync(`taskkill /F /IM yt-dlp.exe 2>nul`, { stdio: 'ignore' });
+      } else {
+        execSync(`pkill -9 yt-dlp 2>/dev/null`, { stdio: 'ignore' });
+      }
+    } catch (e) {
+      // Ignore errors
+    }
+
+    // Get download info to save
+    const download = this.downloads.get(downloadId);
+    if (!download) {
+      return false;
+    }
+
+    // Save paused download info to JSON file
+    const publicDir = path.join(__dirname, '../public');
+    const pausedDownloadsPath = path.join(publicDir, 'paused_downloads.json');
+    
+    let pausedDownloads = [];
+    try {
+      if (fs.existsSync(pausedDownloadsPath)) {
+        pausedDownloads = JSON.parse(fs.readFileSync(pausedDownloadsPath, 'utf8'));
+      }
+    } catch (e) {
+      pausedDownloads = [];
+    }
+
+    // Add this download to paused list
+    const pausedInfo = {
+      downloadId: downloadId,
+      url: download.url,
+      format_id: download.format_id,
+      save_dir: download.saveDir,
+      title: download.title,
+      thumbnail: download.thumbnail,
+      filename: download.filename,
+      progress: download.progress,
+      filePath: filePath,
+      timestamp: new Date().toISOString()
+    };
+
+    // Remove any existing entry for this downloadId
+    pausedDownloads = pausedDownloads.filter(d => d.downloadId !== downloadId);
+    pausedDownloads.push(pausedInfo);
+    
+    try {
+      fs.writeFileSync(pausedDownloadsPath, JSON.stringify(pausedDownloads, null, 2));
+    } catch (e) {
+      console.error('Failed to save paused download info:', e);
+    }
+
+    // Update status to 'paused' - do NOT clean up temp files!
+    this.updateProgress(downloadId, {
+      status: 'paused',
+      error: 'Download paused by user',
+      speed: '0',
+      eta: '0'
+    });
+
+    console.log(`Download paused: ${downloadId}`);
+    return true;
+  }
+
+  /**
+   * Resume a paused download
+   */
+  async resumeDownload(downloadId) {
+    const publicDir = path.join(__dirname, '../public');
+    const pausedDownloadsPath = path.join(publicDir, 'paused_downloads.json');
+    
+    let pausedDownloads = [];
+    try {
+      if (fs.existsSync(pausedDownloadsPath)) {
+        pausedDownloads = JSON.parse(fs.readFileSync(pausedDownloadsPath, 'utf8'));
+      }
+    } catch (e) {
+      console.error('Failed to read paused downloads:', e);
+      return false;
+    }
+
+    const pausedInfo = pausedDownloads.find(d => d.downloadId === downloadId);
+    if (!pausedInfo) {
+      console.log('No paused info found for:', downloadId);
+      return false;
+    }
+
+    // Remove from paused list
+    pausedDownloads = pausedDownloads.filter(d => d.downloadId !== downloadId);
+    try {
+      fs.writeFileSync(pausedDownloadsPath, JSON.stringify(pausedDownloads, null, 2));
+    } catch (e) {
+      console.error('Failed to update paused downloads:', e);
+    }
+
+    // Remove the old paused entry from downloads map
+    this.downloads.delete(downloadId);
+
+    // Start the download again - yt-dlp will resume from .part file automatically
+    const downloadService = require('./downloadService');
+    try {
+      const newDownloadId = downloadService.startDownload(
+        pausedInfo.url,
+        pausedInfo.format_id,
+        pausedInfo.save_dir,
+        {
+          title: pausedInfo.title,
+          thumbnail: pausedInfo.thumbnail,
+          filename: pausedInfo.filename
+        }
+      );
+      
+      console.log(`Download resuming: ${downloadId} -> ${newDownloadId}`);
+      return true;
+    } catch (e) {
+      console.error('Failed to resume download:', e);
+      // Restore the download entry as error
+      this.updateProgress(downloadId, {
+        status: 'error',
+        error: 'Failed to resume download: ' + e.message
+      });
+      return false;
+    }
+  }
+
+  /**
+   * Pause all active downloads
+   */
+  pauseAllDownloads() {
+    const activeDownloads = Array.from(this.downloads.values())
+      .filter(d => ['downloading', 'starting', 'queued'].includes(d.status));
+    
+    const results = [];
+    for (const download of activeDownloads) {
+      results.push(this.pauseDownload(download.id));
+    }
+    
+    return { success: true, pausedCount: activeDownloads.length };
+  }
+
+  /**
+   * Resume all paused downloads
+   */
+  resumeAllDownloads() {
+    const publicDir = path.join(__dirname, '../public');
+    const pausedDownloadsPath = path.join(publicDir, 'paused_downloads.json');
+    
+    let pausedDownloads = [];
+    try {
+      if (fs.existsSync(pausedDownloadsPath)) {
+        pausedDownloads = JSON.parse(fs.readFileSync(pausedDownloadsPath, 'utf8'));
+      }
+    } catch (e) {
+      console.error('Failed to read paused downloads:', e);
+      return { success: false, error: 'No paused downloads found' };
+    }
+
+    const downloadService = require('./downloadService');
+    let resumedCount = 0;
+
+    for (const pausedInfo of pausedDownloads) {
+      // Remove from downloads map
+      this.downloads.delete(pausedInfo.downloadId);
+      
+      try {
+        downloadService.startDownload(
+          pausedInfo.url,
+          pausedInfo.format_id,
+          pausedInfo.save_dir,
+          {
+            title: pausedInfo.title,
+            thumbnail: pausedInfo.thumbnail,
+            filename: pausedInfo.filename
+          }
+        );
+        
+        resumedCount++;
+      } catch (e) {
+        console.error('Failed to resume download:', pausedInfo.downloadId, e);
+      }
+    }
+
+    // Clear the paused downloads file
+    try {
+      fs.writeFileSync(pausedDownloadsPath, JSON.stringify([], null, 2));
+    } catch (e) {
+      console.error('Failed to clear paused downloads:', e);
+    }
+
+    return { success: true, resumedCount };
+  }
+
+  /**
+   * Get paused downloads count
+   */
+  getPausedDownloadsCount() {
+    const publicDir = path.join(__dirname, '../public');
+    const pausedDownloadsPath = path.join(publicDir, 'paused_downloads.json');
+    
+    try {
+      if (fs.existsSync(pausedDownloadsPath)) {
+        const pausedDownloads = JSON.parse(fs.readFileSync(pausedDownloadsPath, 'utf8'));
+        return pausedDownloads.length;
+      }
+    } catch (e) {
+      return 0;
+    }
+    return 0;
+  }
+
   removeDownload(downloadId) {
     // Remove from downloads map
     this.downloads.delete(downloadId);

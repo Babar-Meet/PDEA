@@ -108,6 +108,96 @@ export const cancelDownload = createAsyncThunk(
   }
 );
 
+export const pauseDownload = createAsyncThunk(
+  'download/pauseDownload',
+  async (id, { dispatch, rejectWithValue }) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/download/pause/${id}`, {
+        method: 'POST',
+      });
+      const data = await res.json();
+      if (data.success) {
+        dispatch(fetchDownloads());
+        return true;
+      }
+      return rejectWithValue(data.error);
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
+export const resumeDownload = createAsyncThunk(
+  'download/resumeDownload',
+  async (id, { dispatch, rejectWithValue }) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/download/resume/${id}`, {
+        method: 'POST',
+      });
+      const data = await res.json();
+      if (data.success) {
+        dispatch(fetchDownloads());
+        return true;
+      }
+      return rejectWithValue(data.error);
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
+export const pauseAllDownloads = createAsyncThunk(
+  'download/pauseAllDownloads',
+  async (_, { dispatch, rejectWithValue }) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/download/pause-all`, {
+        method: 'POST',
+      });
+      const data = await res.json();
+      if (data.success) {
+        dispatch(fetchDownloads());
+        return data.pausedCount;
+      }
+      return rejectWithValue(data.error);
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
+export const resumeAllDownloads = createAsyncThunk(
+  'download/resumeAllDownloads',
+  async (_, { dispatch, rejectWithValue }) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/download/resume-all`, {
+        method: 'POST',
+      });
+      const data = await res.json();
+      if (data.success) {
+        dispatch(fetchDownloads());
+        return data.resumedCount;
+      }
+      return rejectWithValue(data.error);
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
+export const fetchPausedCount = createAsyncThunk(
+  'download/fetchPausedCount',
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/download/paused-count`);
+      const data = await res.json();
+      if (data.success) return data.count;
+      return rejectWithValue(data.error);
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
 export const retryDownload = createAsyncThunk(
   'download/retryDownload',
   async (id, { dispatch, rejectWithValue }) => {
@@ -170,6 +260,7 @@ const initialState = {
   simpleVideoData: null,
   directVideoData: null,
   cleanupMessage: null,
+  pausedCount: 0,
 };
 
 const downloadSlice = createSlice({
@@ -220,6 +311,9 @@ const downloadSlice = createSlice({
       .addCase(removeDownload.fulfilled, (state, action) => {
         // Download removed from backend, no need to do anything here
         // as fetchDownloads will be called
+      })
+      .addCase(fetchPausedCount.fulfilled, (state, action) => {
+        state.pausedCount = action.payload;
       });
   },
 });
