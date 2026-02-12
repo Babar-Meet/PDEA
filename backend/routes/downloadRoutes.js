@@ -30,6 +30,9 @@ router.post('/cancel/:id', downloadController.cancelDownload);
 // Retry a download
 router.post('/retry/:id', downloadController.retryDownload);
 
+// Remove a download from history
+router.post('/remove/:id', downloadController.removeDownload);
+
 // Cleanup orphaned temp files
 router.post('/cleanup', downloadController.cleanupOrphanedFiles);
 

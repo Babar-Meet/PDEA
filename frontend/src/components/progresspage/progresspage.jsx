@@ -17,9 +17,10 @@ import {
 import './progresspage.css';
 
 const ProgressPage = () => {
-  const { downloads, cancelDownload, fetchDownloads, retryDownload, cleanupOrphanedFiles, cleanupMessage, clearCleanupMessage } = useDownload();
+  const { downloads, cancelDownload, fetchDownloads, retryDownload, cleanupOrphanedFiles, cleanupMessage, clearCleanupMessage, removeDownload } = useDownload();
   const [cancellingIds, setCancellingIds] = useState(new Set());
   const [cleaning, setCleaning] = useState(false);
+  const [removingIds, setRemovingIds] = useState(new Set());
 
   // Clear cleanup message after 5 seconds
   useEffect(() => {
@@ -111,6 +112,28 @@ const ProgressPage = () => {
     }
   }, [cleanupOrphanedFiles, fetchDownloads, cleaning]);
 
+  const handleRemove = useCallback(async (id) => {
+    // Prevent multiple remove clicks
+    if (removingIds.has(id)) return;
+    
+    setRemovingIds(prev => new Set(prev).add(id));
+    
+    try {
+      await removeDownload(id);
+      // Fetch fresh data after removing
+      setTimeout(() => {
+        fetchDownloads();
+      }, 300);
+    } catch (error) {
+      console.error('Remove failed:', error);
+      setRemovingIds(prev => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    }
+  }, [removeDownload, fetchDownloads, removingIds]);
+
   return (
     <div className="progress-page-container">
       <div className="progress-page-header">
@@ -175,7 +198,7 @@ const ProgressPage = () => {
                     )}
                   </div>
                   <div className="dl-header-actions">
-                    {dl.status === 'error' && (
+                    {(dl.status === 'error' || dl.status === 'cancelled') && (
                       <button 
                         className="retry-dl-btn" 
                         onClick={() => handleRetry(dl.id)}
@@ -195,6 +218,23 @@ const ProgressPage = () => {
                           <RefreshCw size={16} className="spin" />
                         ) : (
                           <X size={16} />
+                        )}
+                      </button>
+                    )}
+                    {['finished', 'error', 'cancelled'].includes(dl.status) && (
+                      <button 
+                        className="remove-dl-btn" 
+                        onClick={() => handleRemove(dl.id)}
+                        title="Remove from history"
+                        disabled={removingIds.has(dl.id)}
+                      >
+                        {removingIds.has(dl.id) ? (
+                          <RefreshCw size={16} className="spin" />
+                        ) : (
+                          <>
+                            <Trash2 size={14} />
+                            <span className="remove-btn-text">Remove</span>
+                          </>
                         )}
                       </button>
                     )}

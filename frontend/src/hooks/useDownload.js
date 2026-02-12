@@ -7,10 +7,12 @@ import {
   startDirectDownload as startDirectDownloadThunk,
   cancelDownload as cancelDownloadThunk,
   retryDownload as retryDownloadThunk,
+  removeDownload as removeDownloadThunk,
   cleanupOrphanedFiles as cleanupOrphanedFilesThunk,
   setSimpleVideoData as setSimpleVideoDataAction,
   setDirectVideoData as setDirectVideoDataAction,
   clearVideoData as clearVideoDataAction,
+  clearCleanupMessage as clearCleanupMessageAction,
 } from '../store/slices/downloadSlice';
 
 export const useDownload = () => {
@@ -79,6 +81,15 @@ export const useDownload = () => {
     }
   };
 
+  const removeDownload = async (id) => {
+    try {
+      await dispatch(removeDownloadThunk(id)).unwrap();
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   return {
     downloads,
     settings,
@@ -90,6 +101,7 @@ export const useDownload = () => {
     updateSettings,
     fetchSettings: () => dispatch(fetchSettingsThunk()),
     cleanupOrphanedFiles,
+    removeDownload,
 
     simpleVideoData,
     directVideoData,
@@ -97,5 +109,6 @@ export const useDownload = () => {
     setSimpleVideoData: (data) => dispatch(setSimpleVideoDataAction(data)),
     setDirectVideoData: (data) => dispatch(setDirectVideoDataAction(data)),
     clearVideoData: () => dispatch(clearVideoDataAction()),
+    clearCleanupMessage: () => dispatch(clearCleanupMessageAction()),
   };
 };

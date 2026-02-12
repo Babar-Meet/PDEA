@@ -266,6 +266,38 @@
   color: white;
 }
 
+.remove-dl-btn {
+  background: rgba(231, 76, 60, 0.1);
+  color: #e74c3c;
+  border: none;
+  min-width: 70px;
+  height: 24px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 11px;
+  padding: 0 8px;
+}
+
+.remove-dl-btn:hover {
+  background: #e74c3c;
+  color: white;
+}
+
+.remove-dl-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.remove-btn-text {
+  font-size: 10px;
+  font-weight: 500;
+}
+
 .dl-filename {
   font-weight: 600;
   font-size: 14px;

@@ -839,6 +839,14 @@ class DownloadService {
     return downloadManager.cancelDownload(id);
   }
 
+  removeDownload(id) {
+    const download = downloadManager.getDownload(id);
+    if (!download) return false;
+    
+    downloadManager.removeDownload(id);
+    return true;
+  }
+
   getDownloadStatus(id) {
     return downloadManager.getDownload(id);
   }

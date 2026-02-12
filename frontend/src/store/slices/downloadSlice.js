@@ -143,6 +143,25 @@ export const cleanupOrphanedFiles = createAsyncThunk(
   }
 );
 
+export const removeDownload = createAsyncThunk(
+  'download/removeDownload',
+  async (id, { dispatch, rejectWithValue }) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/download/remove/${id}`, {
+        method: 'POST',
+      });
+      const data = await res.json();
+      if (data.success) {
+        dispatch(fetchDownloads());
+        return true;
+      }
+      return rejectWithValue(data.error);
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
 const initialState = {
   downloads: [],
   settings: { maxConcurrentPlaylistDownloads: 3 },
@@ -174,6 +193,9 @@ const downloadSlice = createSlice({
       if (index !== -1) {
         state.downloads[index] = { ...state.downloads[index], ...updates };
       }
+    },
+    removeDownloadLocally: (state, action) => {
+      state.downloads = state.downloads.filter(d => d.id !== action.payload);
     }
   },
   extraReducers: (builder) => {
@@ -192,11 +214,15 @@ const downloadSlice = createSlice({
       })
       .addCase(cleanupOrphanedFiles.rejected, (state, action) => {
         state.cleanupMessage = null;
+      })
+      .addCase(removeDownload.fulfilled, (state, action) => {
+        // Download removed from backend, no need to do anything here
+        // as fetchDownloads will be called
       });
   },
 });
 
 
-export const { setSimpleVideoData, setDirectVideoData, clearVideoData, clearCleanupMessage, updateDownloadProgress } = downloadSlice.actions;
+export const { setSimpleVideoData, setDirectVideoData, clearVideoData, clearCleanupMessage, updateDownloadProgress, removeDownloadLocally } = downloadSlice.actions;
 
 export default downloadSlice.reducer;
