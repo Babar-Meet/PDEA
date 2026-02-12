@@ -69,8 +69,13 @@ const ProgressPage = () => {
     
     try {
       await cancelDownload(id);
-      
-      // Fetch fresh data instead of reloading the page
+      // Reset cancelling state immediately after cancel completes
+      setCancellingIds(prev => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+      // Fetch fresh data
       setTimeout(() => {
         fetchDownloads();
       }, 300);
@@ -87,10 +92,14 @@ const ProgressPage = () => {
   const handleRetry = useCallback(async (id) => {
     try {
       await retryDownload(id);
+      // Refresh downloads to update status (show cancel button when status becomes 'starting')
+      setTimeout(() => {
+        fetchDownloads();
+      }, 300);
     } catch (error) {
       console.error('Retry failed:', error);
     }
-  }, [retryDownload]);
+  }, [retryDownload, fetchDownloads]);
 
   const handleRefresh = useCallback(() => {
     fetchDownloads();

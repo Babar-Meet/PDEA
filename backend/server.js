@@ -41,11 +41,29 @@ app.use('/api/ambience', ambienceRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 
 const frontendBuildPath = path.join(__dirname, '../frontend/dist');
-app.use(express.static(frontendBuildPath));
+const frontendBuildExists = fs.existsSync(frontendBuildPath) && fs.existsSync(path.join(frontendBuildPath, 'index.html'));
 
-app.get('*', (req, res) => {
-  res.sendFile(path.join(frontendBuildPath, 'index.html'));
-});
+if (frontendBuildExists) {
+  app.use(express.static(frontendBuildPath));
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(frontendBuildPath, 'index.html'));
+  });
+} else {
+  app.get('*', (req, res) => {
+    res.json({
+      message: 'PDEA Backend Server',
+      status: 'Running',
+      endpoints: {
+        videos: '/api/videos',
+        health: '/api/health',
+        download: '/api/download',
+        ambience: '/api/ambience',
+        subscriptions: '/api/subscriptions'
+      },
+      note: 'Frontend build not found. Run "npm run build" in frontend directory to serve the frontend.'
+    });
+  });
+}
 
 const server = http.createServer(app);
 
