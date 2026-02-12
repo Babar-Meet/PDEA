@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { exec } = require('child_process');
+const { exec, spawn } = require('child_process');
 const util = require('util');
 
 const execPromise = util.promisify(exec);
@@ -11,6 +11,13 @@ const SUBSCRIPTIONS_DIR = path.join(__dirname, '../public/Subscriptions');
 const TRASH_DIR = path.join(__dirname, '../public/trash');
 const CORRUPT_BACKUP_DIR = path.join(TRASH_DIR, 'subscription_corrupt_backup');
 const YT_DLP_PATH = path.join(__dirname, '../public/yt-dlp.exe');
+
+// Track active downloads to avoid interference
+let activeDownloadCount = 0;
+let lastCheckTime = 0;
+const MIN_CHECK_INTERVAL = 60000; // Minimum 60 seconds between checks
+const MAX_CONCURRENT_CHECKS = 2; // Max concurrent video checks
+let concurrentCheckCount = 0;
 
 // Ensure directories exist
 if (!fs.existsSync(SUBSCRIPTIONS_DIR)) {
@@ -129,6 +136,14 @@ async function updateSubscription(channelName, updates) {
 async function checkForNewVideos(subscription, customDate = null) {
   const { channelName, channel_url, last_checked } = subscription;
   
+  // Skip if too many concurrent checks
+  if (concurrentCheckCount >= MAX_CONCURRENT_CHECKS) {
+    console.log(`[Subscription Service] Skipping check for ${channelName} - too many concurrent checks`);
+    return [];
+  }
+  
+  concurrentCheckCount++;
+  
   try {
     const checkDate = customDate || last_checked;
     // Use a slightly older date (2 days ago) for yt-dlp filtering to avoid missing 
@@ -141,103 +156,144 @@ async function checkForNewVideos(subscription, customDate = null) {
     const dateAfter = twoDaysAgo.toISOString().split('T')[0].replace(/-/g, '');
     
     // Use local yt-dlp.exe if available, otherwise fall back to system yt-dlp
-    const ytDlp = fs.existsSync(YT_DLP_PATH) ? `"${YT_DLP_PATH}"` : 'yt-dlp';
+    const ytDlp = fs.existsSync(YT_DLP_PATH) ? YT_DLP_PATH : 'yt-dlp';
     // Use a more unique delimiter to avoid issues with titles/URLs containing |
     const delimiter = '###SEP###';
-    const command = `${ytDlp} "${channel_url}" --dateafter "${dateAfter}" --flat-playlist --print "%(id)s${delimiter}%(title)s${delimiter}%(upload_date)s${delimiter}%(thumbnail)s${delimiter}%(timestamp)s" --js-runtimes node`;
     
     console.log(`[Subscription Service] Checking ${channelName} for videos since ${dateAfter}...`);
-    const { stdout, stderr } = await execPromise(command);
     
-    if (stderr && !stderr.includes('WARNING')) {
-      console.error(`Error checking videos for ${channelName}:`, stderr);
-      // If we get a serious error, don't return partial results which might update last_checked incorrectly
-      return [];
-    }
+    // Use spawn with lower priority on Windows
+    const command = ytDlp;
+    const args = [
+      channel_url,
+      '--dateafter', dateAfter,
+      '--flat-playlist',
+      '--print', `%(id)s${delimiter}%(title)s${delimiter}%(upload_date)s${delimiter}%(thumbnail)s${delimiter}%(timestamp)s`,
+      '--js-runtimes', 'node'
+    ];
     
-    const lastCheckedTime = new Date(checkDate).getTime();
-    
-    // Parse output
-    const videos = [];
-    const lines = stdout.split('\n').filter(line => line.trim());
-    
-    for (const line of lines) {
-      const parts = line.split(delimiter);
-      if (parts.length < 2) continue;
+    return new Promise((resolve, reject) => {
+      let stdout = '';
+      let stderr = '';
       
-      const [id, title, uploadDate, thumbnail, timestamp] = parts;
+      const childProcess = spawn(command, args, {
+        windowsHide: true,
+        stdio: ['ignore', 'pipe', 'pipe']
+      });
       
-      // Precise timestamp filtering if available
-      if (timestamp && timestamp !== 'NA' && !isNaN(timestamp)) {
-        const videoTime = parseInt(timestamp) * 1000;
-        if (videoTime <= lastCheckedTime) {
-          continue; // Skip already seen videos
+      // Set low priority on Windows (only works on Windows)
+      if (process.platform === 'win32') {
+        try {
+          childProcess.priority = 0x00004000; // IDLE_PRIORITY_CLASS
+        } catch (e) {
+          // Priority not supported, continue anyway
         }
       }
       
-      if (id && title) {
-        // Process thumbnail URL - Ensure it's a valid string
-        let processedThumbnail = thumbnail && thumbnail !== 'NA' ? thumbnail : null;
-        
-        // If thumbnail is missing, construct a fallback YouTube thumbnail URL
-        if (!processedThumbnail) {
-          processedThumbnail = `https://i.ytimg.com/vi/${id}/mqdefault.jpg`;
+      childProcess.stdout.on('data', (data) => {
+        stdout += data.toString();
+      });
+      
+      childProcess.stderr.on('data', (data) => {
+        stderr += data.toString();
+      });
+      
+      childProcess.on('close', (code) => {
+        if (code !== 0 && !stderr.includes('WARNING')) {
+          console.error(`Error checking videos for ${channelName}:`, stderr);
+          resolve([]);
+          return;
         }
         
-        // Validate and process upload date to YYYY-MM-DD for frontend compatibility
-        let processedUploadDate = null;
-        if (uploadDate && uploadDate !== 'NA') {
-          const trimmedDate = uploadDate.trim();
-          if (/^\d{8}$/.test(trimmedDate)) { // YYYYMMDD
-            processedUploadDate = `${trimmedDate.substring(0, 4)}-${trimmedDate.substring(4, 6)}-${trimmedDate.substring(6, 8)}`;
-          } else if (/^\d{4}-\d{2}-\d{2}$/.test(trimmedDate)) {
-            processedUploadDate = trimmedDate;
+        const lastCheckedTime = new Date(checkDate).getTime();
+        
+        // Parse output
+        const videos = [];
+        const lines = stdout.split('\n').filter(line => line.trim());
+        
+        for (const line of lines) {
+          const parts = line.split(delimiter);
+          if (parts.length < 2) continue;
+          
+          const [id, title, uploadDate, thumbnail, timestamp] = parts;
+          
+          // Precise timestamp filtering if available
+          if (timestamp && timestamp !== 'NA' && !isNaN(timestamp)) {
+            const videoTime = parseInt(timestamp) * 1000;
+            if (videoTime <= lastCheckedTime) {
+              continue; // Skip already seen videos
+            }
+          }
+          
+          if (id && title) {
+            // Process thumbnail URL - Ensure it's a valid string
+            let processedThumbnail = thumbnail && thumbnail !== 'NA' ? thumbnail : null;
+            
+            // If thumbnail is missing, construct a fallback YouTube thumbnail URL
+            if (!processedThumbnail) {
+              processedThumbnail = `https://i.ytimg.com/vi/${id}/mqdefault.jpg`;
+            }
+            
+            // Validate and process upload date to YYYY-MM-DD for frontend compatibility
+            let processedUploadDate = null;
+            if (uploadDate && uploadDate !== 'NA') {
+              const trimmedDate = uploadDate.trim();
+              if (/^\d{8}$/.test(trimmedDate)) { // YYYYMMDD
+                processedUploadDate = `${trimmedDate.substring(0, 4)}-${trimmedDate.substring(4, 6)}-${trimmedDate.substring(6, 8)}`;
+              } else if (/^\d{4}-\d{2}-\d{2}$/.test(trimmedDate)) {
+                processedUploadDate = trimmedDate;
+              }
+            }
+            
+            // Fallback to current date if missing so it doesn't break UI
+            if (!processedUploadDate) {
+              processedUploadDate = new Date().toISOString().split('T')[0];
+            }
+            
+            videos.push({
+              id,
+              title,
+              upload_date: processedUploadDate,
+              thumbnail: processedThumbnail,
+              channel_name: channelName
+            });
           }
         }
         
-        // Fallback to current date if missing so it doesn't break UI
-        if (!processedUploadDate) {
-          processedUploadDate = new Date().toISOString().split('T')[0];
+        // Save videos to pending list
+        if (videos.length > 0) {
+          if (customDate) {
+            pendingVideosService.saveCustomDateVideos(channelName, videos, customDate);
+          } else {
+            videos.forEach(video => {
+              pendingVideosService.addPendingVideo(channelName, video);
+            });
+            
+            // Move last_checked forward to now to "acknowledge" these videos
+            // and prevent redundant checks for the same window.
+            updateSubscription(channelName, {
+              last_checked: new Date().toISOString(),
+              last_success: new Date().toISOString()
+            }).catch(err => console.error('Error updating subscription:', err));
+          }
+        } else if (!customDate) {
+          // Even if no new videos, update last_checked to show the check happened
+          updateSubscription(channelName, {
+            last_checked: new Date().toISOString(),
+            last_success: new Date().toISOString()
+          }).catch(err => console.error('Error updating subscription:', err));
         }
         
-        videos.push({
-          id,
-          title,
-          upload_date: processedUploadDate,
-          thumbnail: processedThumbnail,
-          channel_name: channelName
-        });
-      }
-    }
-    
-    // Save videos to pending list
-    if (videos.length > 0) {
-      if (customDate) {
-        pendingVideosService.saveCustomDateVideos(channelName, videos, customDate);
-      } else {
-        videos.forEach(video => {
-          pendingVideosService.addPendingVideo(channelName, video);
-        });
-        
-        // Move last_checked forward to now to "acknowledge" these videos
-        // and prevent redundant checks for the same window.
-        await updateSubscription(channelName, {
-          last_checked: new Date().toISOString(),
-          last_success: new Date().toISOString()
-        });
-      }
-    } else if (!customDate) {
-      // Even if no new videos, update last_checked to show the check happened
-      await updateSubscription(channelName, {
-        last_checked: new Date().toISOString(),
-        last_success: new Date().toISOString()
+        resolve(videos);
       });
-    }
-    
-    return videos;
-  } catch (error) {
-    console.error(`Error checking videos for ${channelName}:`, error);
-    return [];
+      
+      childProcess.on('error', (error) => {
+        console.error(`Process error checking videos for ${channelName}:`, error);
+        resolve([]);
+      });
+    });
+  } finally {
+    concurrentCheckCount--;
   }
 }
 
@@ -248,6 +304,9 @@ async function downloadVideo(video, subscription) {
   
   // Mark as downloading
   pendingVideosService.updatePendingVideoStatus(channelName, id, 'downloading');
+  
+  // Track active download
+  activeDownloadCount++;
   
   const saveDir = `Subscriptions/${channelName}`;
   const url = `https://www.youtube.com/watch?v=${id}`;
@@ -292,6 +351,8 @@ async function downloadVideo(video, subscription) {
     console.error(`[Auto-Download] Error queuing video ${title}:`, error);
     pendingVideosService.updatePendingVideoStatus(channelName, id, 'error');
     throw error;
+  } finally {
+    activeDownloadCount--;
   }
 }
 
@@ -418,7 +479,17 @@ function startPeriodicCheck(intervalMinutes = 10) {
   setTimeout(() => runCheck(), 5000);
   
   async function runCheck() {
+    const now = Date.now();
+    
+    // Skip if too soon since last check
+    if (now - lastCheckTime < MIN_CHECK_INTERVAL) {
+      console.log(`[Subscription Service] Skipping check - too soon since last check`);
+      return;
+    }
+    
+    lastCheckTime = now;
     console.log(`[Subscription Service] Running periodic background check at ${new Date().toLocaleTimeString()}...`);
+    
     const subscriptions = await loadSubscriptions();
     
     for (const subscription of subscriptions) {
@@ -426,23 +497,41 @@ function startPeriodicCheck(intervalMinutes = 10) {
         try {
           // 1. Check for NEW videos
           const newVideos = await checkForNewVideos(subscription);
+          
+          // 2. Wait a bit between checks to avoid overwhelming system
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          
           if (newVideos.length > 0) {
             console.log(`[Subscription Service] Found ${newVideos.length} new videos for ${subscription.channelName}`);
             
-            // Queue downloads for newly found videos
+            // Queue downloads for newly found videos (only if no active downloads)
             for (const video of newVideos) {
+              if (activeDownloadCount >= 3) {
+                console.log(`[Subscription Service] Too many active downloads, queuing for later`);
+                break;
+              }
+              
+              console.log(`[Subscription Service] Queuing video: ${video.title}`);
               await downloadVideo(video, subscription);
+              
+              // Wait between queueing downloads
+              await new Promise(resolve => setTimeout(resolve, 3000));
             }
           }
 
-          // 2. RETRY items from the pending list that were previously found but not downloaded
-          // only if auto_download is enabled
+          // 3. RETRY items from the pending list that were previously found but not downloaded
+          // only if auto_download is enabled and not too many active downloads
           const pendingVideos = pendingVideosService.loadPendingVideos(subscription.channelName);
           const videosToRetry = pendingVideos.filter(v => v.status === 'error' || !v.status);
           
-          if (videosToRetry.length > 0) {
+          if (videosToRetry.length > 0 && activeDownloadCount < 2) {
             console.log(`[Subscription Service] Retrying ${videosToRetry.length} pending/failed videos for ${subscription.channelName}`);
             for (const video of videosToRetry) {
+              if (activeDownloadCount >= 3) {
+                console.log(`[Subscription Service] Too many active downloads, stopping retries`);
+                break;
+              }
+              
               try {
                 // Ensure we have correct metadata
                 const fullVideo = { ...video, channel_name: subscription.channelName };
@@ -450,6 +539,9 @@ function startPeriodicCheck(intervalMinutes = 10) {
               } catch (retryError) {
                 // Individual video error handled inside downloadVideo
               }
+              
+              // Wait between retries
+              await new Promise(resolve => setTimeout(resolve, 2000));
             }
           }
           
@@ -508,5 +600,9 @@ module.exports = {
   retryFailedDownloads,
   startPeriodicCheck,
   stopPeriodicCheck,
-  initialize
+  initialize,
+  // Functions to track active downloads from external sources
+  incrementActiveDownloads: () => { activeDownloadCount++; },
+  decrementActiveDownloads: () => { activeDownloadCount = Math.max(0, activeDownloadCount - 1); },
+  getActiveDownloadCount: () => activeDownloadCount
 };

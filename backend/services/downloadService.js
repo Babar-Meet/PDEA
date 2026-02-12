@@ -4,6 +4,7 @@ const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const downloadManager = require('./DownloadManager');
 const thumbnailService = require('./thumbnailService');
+const subscriptionService = require('./subscriptionService');
 
 
 const publicDir = path.join(__dirname, '../public');
@@ -637,6 +638,10 @@ class DownloadService {
     if (!metadata.batchId) {
       downloadManager.updateProgress(downloadId, { status: 'starting' });
       this.startProcess(downloadId, args, outputTemplate);
+      // Notify subscription service about new download
+      if (typeof subscriptionService.incrementActiveDownloads === 'function') {
+        subscriptionService.incrementActiveDownloads();
+      }
     } else {
       this.queue.push({ downloadId, args, outputTemplate, isBatch: true });
       downloadManager.updateProgress(downloadId, { status: 'queued' });
@@ -683,6 +688,10 @@ class DownloadService {
       this.activeBatchProcesses++;
       downloadManager.updateProgress(downloadId, { status: 'starting' });
       this.startProcess(downloadId, args, outputTemplate, true);
+      // Notify subscription service about new batch download
+      if (typeof subscriptionService.incrementActiveDownloads === 'function') {
+        subscriptionService.incrementActiveDownloads();
+      }
     }
   }
 
@@ -737,6 +746,10 @@ class DownloadService {
       const processData = downloadManager.processes.get(downloadId);
       
       if (processData && processData.cancelled) {
+        // Notify subscription service about cancelled download
+        if (typeof subscriptionService.decrementActiveDownloads === 'function') {
+          subscriptionService.decrementActiveDownloads();
+        }
         return;
       }
 
@@ -744,6 +757,11 @@ class DownloadService {
         downloadManager.completeDownload(downloadId, true);
       } else {
         downloadManager.completeDownload(downloadId, false, `Process exited with code ${code}`);
+      }
+      
+      // Notify subscription service about completed download
+      if (typeof subscriptionService.decrementActiveDownloads === 'function') {
+        subscriptionService.decrementActiveDownloads();
       }
       
       if (isBatch) {
