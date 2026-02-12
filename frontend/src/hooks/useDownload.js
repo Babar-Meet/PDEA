@@ -8,8 +8,6 @@ import {
   cancelDownload as cancelDownloadThunk,
   retryDownload as retryDownloadThunk,
   removeDownload as removeDownloadThunk,
-  pauseDownload as pauseDownloadThunk,
-  resumeDownload as resumeDownloadThunk,
   cleanupOrphanedFiles as cleanupOrphanedFilesThunk,
   setSimpleVideoData as setSimpleVideoDataAction,
   setDirectVideoData as setDirectVideoDataAction,
@@ -92,23 +90,7 @@ export const useDownload = () => {
     }
   };
 
-  const pauseDownload = async (id) => {
-    try {
-      await dispatch(pauseDownloadThunk(id)).unwrap();
-      return true;
-    } catch {
-      return false;
-    }
-  };
 
-  const resumeDownload = async (id) => {
-    try {
-      await dispatch(resumeDownloadThunk(id)).unwrap();
-      return true;
-    } catch {
-      return false;
-    }
-  };
 
   return {
     downloads,
@@ -122,8 +104,7 @@ export const useDownload = () => {
     fetchSettings: () => dispatch(fetchSettingsThunk()),
     cleanupOrphanedFiles,
     removeDownload,
-    pauseDownload,
-    resumeDownload,
+
 
     simpleVideoData,
     directVideoData,

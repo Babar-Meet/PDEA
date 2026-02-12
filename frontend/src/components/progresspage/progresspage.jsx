@@ -19,12 +19,10 @@ import {
 import './progresspage.css';
 
 const ProgressPage = () => {
-  const { downloads, cancelDownload, fetchDownloads, retryDownload, cleanupOrphanedFiles, cleanupMessage, clearCleanupMessage, removeDownload, pauseDownload, resumeDownload } = useDownload();
+  const { downloads, cancelDownload, fetchDownloads, retryDownload, cleanupOrphanedFiles, cleanupMessage, clearCleanupMessage, removeDownload } = useDownload();
   const [cancellingIds, setCancellingIds] = useState(new Set());
   const [cleaning, setCleaning] = useState(false);
   const [removingIds, setRemovingIds] = useState(new Set());
-  const [pausingIds, setPausingIds] = useState(new Set());
-  const [resumingIds, setResumingIds] = useState(new Set());
 
   // Clear cleanup message after 5 seconds
   useEffect(() => {
@@ -148,65 +146,8 @@ const ProgressPage = () => {
     }
   }, [removeDownload, fetchDownloads, removingIds]);
 
-  const handlePause = useCallback(async (id) => {
-    // Prevent multiple pause clicks
-    if (pausingIds.has(id)) return;
-    
-    setPausingIds(prev => new Set(prev).add(id));
-    
-    try {
-      await pauseDownload(id);
-      setTimeout(() => {
-        fetchDownloads();
-      }, 300);
-    } catch (error) {
-      console.error('Pause failed:', error);
-      setPausingIds(prev => {
-        const next = new Set(prev);
-        next.delete(id);
-        return next;
-      });
-    }
-  }, [pauseDownload, fetchDownloads, pausingIds]);
-
-  const handleResume = useCallback(async (id) => {
-    // Prevent multiple resume clicks
-    if (resumingIds.has(id)) return;
-    
-    setResumingIds(prev => new Set(prev).add(id));
-    
-    try {
-      await resumeDownload(id);
-      setTimeout(() => {
-        fetchDownloads();
-      }, 300);
-    } catch (error) {
-      console.error('Resume failed:', error);
-      setResumingIds(prev => {
-        const next = new Set(prev);
-        next.delete(id);
-        return next;
-      });
-    }
-  }, [resumeDownload, fetchDownloads, resumingIds]);
-
   // Calculate counts
   const activeCount = downloads.filter(d => ['downloading', 'starting', 'queued'].includes(d.status)).length;
-  const pausedCount = downloads.filter(d => d.status === 'paused').length;
-
-  const handlePauseAll = useCallback(async () => {
-    const activeDownloads = downloads.filter(d => ['downloading', 'starting', 'queued'].includes(d.status));
-    for (const dl of activeDownloads) {
-      await handlePause(dl.id);
-    }
-  }, [downloads, handlePause]);
-
-  const handleResumeAll = useCallback(async () => {
-    const pausedDownloads = downloads.filter(d => d.status === 'paused');
-    for (const dl of pausedDownloads) {
-      await handleResume(dl.id);
-    }
-  }, [downloads, handleResume]);
 
   return (
     <div className="progress-page-container">
@@ -218,24 +159,6 @@ const ProgressPage = () => {
                  <RefreshCw size={16} className="spin" />
                  {activeCount} Active
               </div>
-           )}
-           {activeCount > 0 && (
-             <button 
-               className="pause-all-btn" 
-               onClick={handlePauseAll}
-               title="Pause all downloading"
-             >
-               <Pause size={16} /> Pause All
-             </button>
-           )}
-           {pausedCount > 0 && (
-             <button 
-               className="resume-all-btn" 
-               onClick={handleResumeAll}
-               title="Resume all paused"
-             >
-               <Play size={16} /> Resume All
-             </button>
            )}
           <button 
             className="cleanup-btn" 
@@ -299,47 +222,19 @@ const ProgressPage = () => {
                         <RotateCcw size={16} />
                       </button>
                     )}
-                    {dl.status === 'paused' && (
+                    {(['downloading', 'starting', 'queued'].includes(dl.status)) && (
                       <button 
-                        className="resume-dl-btn" 
-                        onClick={() => handleResume(dl.id)}
-                        title="Resume Download"
-                        disabled={resumingIds.has(dl.id)}
+                        className="cancel-dl-btn" 
+                        onClick={() => handleCancel(dl.id)}
+                        title="Cancel Download"
+                        disabled={cancellingIds.has(dl.id)}
                       >
-                        {resumingIds.has(dl.id) ? (
+                        {cancellingIds.has(dl.id) ? (
                           <RefreshCw size={16} className="spin" />
                         ) : (
-                          <Play size={16} />
+                          <X size={16} />
                         )}
                       </button>
-                    )}
-                    {(['downloading', 'starting', 'queued'].includes(dl.status)) && (
-                      <>
-                        <button 
-                          className="pause-dl-btn" 
-                          onClick={() => handlePause(dl.id)}
-                          title="Pause Download"
-                          disabled={pausingIds.has(dl.id)}
-                        >
-                          {pausingIds.has(dl.id) ? (
-                            <RefreshCw size={16} className="spin" />
-                          ) : (
-                            <Pause size={16} />
-                          )}
-                        </button>
-                        <button 
-                          className="cancel-dl-btn" 
-                          onClick={() => handleCancel(dl.id)}
-                          title="Cancel Download"
-                          disabled={cancellingIds.has(dl.id)}
-                        >
-                          {cancellingIds.has(dl.id) ? (
-                            <RefreshCw size={16} className="spin" />
-                          ) : (
-                            <X size={16} />
-                          )}
-                        </button>
-                      </>
                     )}
                     {['finished', 'error', 'cancelled'].includes(dl.status) && (
                       <button 

@@ -847,13 +847,7 @@ class DownloadService {
     return true;
   }
 
-  pauseDownload(id) {
-    return downloadManager.pauseDownload(id);
-  }
 
-  resumeDownload(id) {
-    return downloadManager.resumeDownload(id);
-  }
 
   getDownloadStatus(id) {
     return downloadManager.getDownload(id);
