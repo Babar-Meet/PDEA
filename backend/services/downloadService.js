@@ -744,8 +744,13 @@ class DownloadService {
 
     process.on('close', (code) => {
       const processData = downloadManager.processes.get(downloadId);
+      const downloadStatus = downloadManager.getDownload(downloadId);
       
-      if (processData && (processData.cancelled || processData.paused)) {
+      // Check if cancelled or paused - either from processData or from downloads map
+      const isCancelled = processData?.cancelled || downloadStatus?.status === 'cancelled';
+      const isPaused = processData?.paused || downloadStatus?.status === 'paused';
+      
+      if (isCancelled || isPaused) {
         // Notify subscription service about cancelled/paused download
         if (typeof subscriptionService.decrementActiveDownloads === 'function') {
           subscriptionService.decrementActiveDownloads();
@@ -857,6 +862,23 @@ class DownloadService {
 
   getPausedDownloadsCount() {
     return downloadManager.getPausedDownloadsCount();
+  }
+
+  getPausedDownloads() {
+    const publicDir = path.join(__dirname, '../public');
+    const pausedDownloadsPath = path.join(publicDir, 'paused_downloads.json');
+    
+    try {
+      if (fs.existsSync(pausedDownloadsPath)) {
+        const content = fs.readFileSync(pausedDownloadsPath, 'utf8');
+        if (content.trim()) {
+          return JSON.parse(content);
+        }
+      }
+    } catch (e) {
+      console.error('Failed to read paused downloads:', e.message);
+    }
+    return [];
   }
 
   removeDownload(id) {

@@ -19,19 +19,24 @@ import {
 import './progresspage.css';
 
 const ProgressPage = () => {
-  const { downloads, cancelDownload, fetchDownloads, retryDownload, cleanupOrphanedFiles, cleanupMessage, clearCleanupMessage, removeDownload, pauseDownload, resumeDownload, pauseAllDownloads, resumeAllDownloads, fetchPausedCount } = useDownload();
-  const [cancellingIds, setCancellingIds] = useState(new Set());
+  const { downloads, cancelDownload, fetchDownloads, retryDownload, cleanupOrphanedFiles, cleanupMessage, clearCleanupMessage, removeDownload, pauseDownload, resumeDownload, pauseAllDownloads, resumeAllDownloads, fetchPausedCount, fetchPausedDownloads, pausedDownloads } = useDownload();
+  const [cancellingIds, setCancellingIds] = useState( new Set());
   const [cleaning, setCleaning] = useState(new Set());
   const [removingIds, setRemovingIds] = useState(new Set());
   const [pausingIds, setPausingIds] = useState(new Set());
   const [resumingIds, setResumingIds] = useState(new Set());
 
-  // Clear cleanup message after 5 seconds
+  // Load paused downloads on mount
+  useEffect(() => {
+    fetchPausedDownloads();
+  }, [fetchPausedDownloads]);
+
+  // Clear cleanup message after 3 seconds
   useEffect(() => {
     if (cleanupMessage) {
       const timer = setTimeout(() => {
         clearCleanupMessage();
-      }, 5000);
+      }, 3000);
       return () => clearTimeout(timer);
     }
   }, [cleanupMessage, clearCleanupMessage]);

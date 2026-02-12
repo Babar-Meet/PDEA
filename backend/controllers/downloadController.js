@@ -183,6 +183,15 @@ exports.getPausedDownloadsCount = (req, res) => {
   }
 };
 
+exports.getPausedDownloads = (req, res) => {
+  try {
+    const pausedDownloads = downloadService.getPausedDownloads();
+    res.json({ success: true, pausedDownloads });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
 exports.removeDownload = (req, res) => {
   try {
     const { id } = req.params;

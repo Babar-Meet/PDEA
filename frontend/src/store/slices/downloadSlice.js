@@ -198,6 +198,20 @@ export const fetchPausedCount = createAsyncThunk(
   }
 );
 
+export const fetchPausedDownloads = createAsyncThunk(
+  'download/fetchPausedDownloads',
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/download/paused`);
+      const data = await res.json();
+      if (data.success) return data.pausedDownloads;
+      return rejectWithValue(data.error);
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
 export const retryDownload = createAsyncThunk(
   'download/retryDownload',
   async (id, { dispatch, rejectWithValue }) => {
@@ -261,6 +275,7 @@ const initialState = {
   directVideoData: null,
   cleanupMessage: null,
   pausedCount: 0,
+  pausedDownloads: [],
 };
 
 const downloadSlice = createSlice({
@@ -314,6 +329,10 @@ const downloadSlice = createSlice({
       })
       .addCase(fetchPausedCount.fulfilled, (state, action) => {
         state.pausedCount = action.payload;
+      })
+      .addCase(fetchPausedDownloads.fulfilled, (state, action) => {
+        state.pausedDownloads = action.payload;
+        state.pausedCount = action.payload.length;
       });
   },
 });

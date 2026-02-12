@@ -203,8 +203,8 @@ class DownloadManager {
     const { process, filePath } = processData;
     const pid = process.pid;
     
-    // Remove from processes map so close handler knows it's paused
-    this.processes.delete(downloadId);
+    // Do NOT remove from processes map yet - the close handler needs to check paused flag
+    // We will remove it after setting the paused flag
 
     // Forcefully kill the process (same as cancel)
     if (pid) {
@@ -228,6 +228,9 @@ class DownloadManager {
       // Ignore errors
     }
 
+    // Now remove from processes map after killing
+    this.processes.delete(downloadId);
+
     // Get download info to save
     const download = this.downloads.get(downloadId);
     if (!download) {
@@ -241,9 +244,13 @@ class DownloadManager {
     let pausedDownloads = [];
     try {
       if (fs.existsSync(pausedDownloadsPath)) {
-        pausedDownloads = JSON.parse(fs.readFileSync(pausedDownloadsPath, 'utf8'));
+        const content = fs.readFileSync(pausedDownloadsPath, 'utf8');
+        if (content.trim()) {
+          pausedDownloads = JSON.parse(content);
+        }
       }
     } catch (e) {
+      console.error('Failed to read paused downloads:', e.message);
       pausedDownloads = [];
     }
 
@@ -293,11 +300,14 @@ class DownloadManager {
     let pausedDownloads = [];
     try {
       if (fs.existsSync(pausedDownloadsPath)) {
-        pausedDownloads = JSON.parse(fs.readFileSync(pausedDownloadsPath, 'utf8'));
+        const content = fs.readFileSync(pausedDownloadsPath, 'utf8');
+        if (content.trim()) {
+          pausedDownloads = JSON.parse(content);
+        }
       }
     } catch (e) {
-      console.error('Failed to read paused downloads:', e);
-      return false;
+      console.error('Failed to read paused downloads:', e.message);
+      pausedDownloads = [];
     }
 
     const pausedInfo = pausedDownloads.find(d => d.downloadId === downloadId);
@@ -369,10 +379,13 @@ class DownloadManager {
     let pausedDownloads = [];
     try {
       if (fs.existsSync(pausedDownloadsPath)) {
-        pausedDownloads = JSON.parse(fs.readFileSync(pausedDownloadsPath, 'utf8'));
+        const content = fs.readFileSync(pausedDownloadsPath, 'utf8');
+        if (content.trim()) {
+          pausedDownloads = JSON.parse(content);
+        }
       }
     } catch (e) {
-      console.error('Failed to read paused downloads:', e);
+      console.error('Failed to read paused downloads:', e.message);
       return { success: false, error: 'No paused downloads found' };
     }
 
@@ -420,10 +433,14 @@ class DownloadManager {
     
     try {
       if (fs.existsSync(pausedDownloadsPath)) {
-        const pausedDownloads = JSON.parse(fs.readFileSync(pausedDownloadsPath, 'utf8'));
-        return pausedDownloads.length;
+        const content = fs.readFileSync(pausedDownloadsPath, 'utf8');
+        if (content.trim()) {
+          const pausedDownloads = JSON.parse(content);
+          return pausedDownloads.length;
+        }
       }
     } catch (e) {
+      console.error('Failed to read paused downloads:', e.message);
       return 0;
     }
     return 0;

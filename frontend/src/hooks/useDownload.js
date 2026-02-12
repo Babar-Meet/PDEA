@@ -11,6 +11,7 @@ import {
   pauseAllDownloads as pauseAllDownloadsThunk,
   resumeAllDownloads as resumeAllDownloadsThunk,
   fetchPausedCount as fetchPausedCountThunk,
+  fetchPausedDownloads as fetchPausedDownloadsThunk,
   retryDownload as retryDownloadThunk,
   removeDownload as removeDownloadThunk,
   cleanupOrphanedFiles as cleanupOrphanedFilesThunk,
@@ -28,6 +29,7 @@ export const useDownload = () => {
   const directVideoData = useSelector((state) => state.download.directVideoData);
   const cleanupMessage = useSelector((state) => state.download.cleanupMessage);
   const pausedCount = useSelector((state) => state.download.pausedCount);
+  const pausedDownloads = useSelector((state) => state.download.pausedDownloads);
 
   const startDirectDownload = async (payload) => {
     try {
@@ -105,6 +107,15 @@ export const useDownload = () => {
     }
   };
 
+  const fetchPausedDownloads = async () => {
+    try {
+      await dispatch(fetchPausedDownloadsThunk()).unwrap();
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   const retryDownload = async (id) => {
     try {
       await dispatch(retryDownloadThunk(id)).unwrap();
@@ -154,7 +165,9 @@ export const useDownload = () => {
     pauseAllDownloads,
     resumeAllDownloads,
     fetchPausedCount,
+    fetchPausedDownloads,
     pausedCount,
+    pausedDownloads,
     fetchDownloads: () => dispatch(fetchDownloadsThunk()),
     retryDownload,
     updateSettings,

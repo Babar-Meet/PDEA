@@ -42,6 +42,9 @@ router.post('/resume-all', downloadController.resumeAllDownloads);
 // Get paused downloads count
 router.get('/paused-count', downloadController.getPausedDownloadsCount);
 
+// Get paused downloads
+router.get('/paused', downloadController.getPausedDownloads);
+
 // Retry a download
 router.post('/retry/:id', downloadController.retryDownload);
 
