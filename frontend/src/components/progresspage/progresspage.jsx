@@ -1,5 +1,6 @@
 import React from 'react';
 import { useDownload } from '../../hooks/useDownload';
+import { formatDate } from '../../utils/format';
 import { 
   X, 
   CheckCircle2, 
@@ -38,7 +39,7 @@ const ProgressPage = () => {
     if (diffInSeconds < 60) return 'Just now';
     if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
     if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
-    return date.toLocaleDateString();
+    return formatDate(date);
   };
 
   return (

@@ -7,7 +7,8 @@ import SimpleDownload from '../../components/simpledownload/simpledownload'
 import AdvanceDownload from '../../components/advancedownload/advancedownload'
 import BatchDownload from '../../components/batchdownload/batchdownload'
 import PlaylistDownload from '../../components/playlistdownload/playlistdownload'
-import QueueVideos from '../../components/queuevideos/queuevideos'
+import NewVideos from '../../components/newvideos/newvideos'
+import Subscriptions from '../../components/subscriptions/subscriptions'
 import ProgressPage from '../../components/progresspage/progresspage'
 import DownloadSettings from '../../components/downloadsettings/downloadsettings'
 import './Download.css'
@@ -26,7 +27,8 @@ const Download = () => {
           <Route path="advance" element={<AdvanceDownload />} />
           <Route path="batch" element={<BatchDownload />} />
           <Route path="playlist" element={<PlaylistDownload />} />
-          <Route path="queue" element={<QueueVideos />} />
+          <Route path="new-videos" element={<NewVideos />} />
+          <Route path="subscriptions" element={<Subscriptions />} />
           <Route path="progress" element={<ProgressPage />} />
           <Route path="settings" element={<DownloadSettings />} />
         </Routes>

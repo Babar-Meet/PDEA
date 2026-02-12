@@ -11,6 +11,8 @@ const videoRoutes = require('./routes/videoRoutes');
 const healthRoutes = require('./routes/healthRoutes');
 const downloadRoutes = require('./routes/downloadRoutes');
 const ambienceRoutes = require('./routes/ambienceRoutes');
+const subscriptionRoutes = require('./routes/subscriptionRoutes');
+const subscriptionService = require('./services/subscriptionService');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -36,6 +38,7 @@ app.use('/api/videos', videoRoutes);
 app.use('/api/health', healthRoutes);
 app.use('/api/download', downloadRoutes);
 app.use('/api/ambience', ambienceRoutes);
+app.use('/api/subscriptions', subscriptionRoutes);
 
 const frontendBuildPath = path.join(__dirname, '../frontend/dist');
 app.use(express.static(frontendBuildPath));
@@ -61,7 +64,7 @@ wss.on('connection', (ws) => {
   });
 });
 
-server.listen(PORT, '0.0.0.0', () => {
+server.listen(PORT, '0.0.0.0', async () => {
   const networkInterfaces = require('os').networkInterfaces();
   const getLocalIp = () => {
     for (const name of Object.keys(networkInterfaces)) {
@@ -82,4 +85,8 @@ server.listen(PORT, '0.0.0.0', () => {
   console.log(`🗑️  Trash folder: ${trashDir}`);
   console.log(`📥 Download API: http://localhost:${PORT}/api/download`);
   console.log(`🔌 WebSocket: ws://localhost:${PORT}/ws/downloads`);
+  
+  // Initialize subscription service
+  await subscriptionService.initialize();
+  console.log('📡 Subscription service initialized');
 });

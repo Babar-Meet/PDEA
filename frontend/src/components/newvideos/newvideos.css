@@ -1,0 +1,227 @@
+.new-videos {
+  padding: 1rem;
+  background: var(--bg-primary, #1e1e2e);
+  color: var(--text-primary, #cdd6f4);
+  min-height: 100%;
+}
+
+.new-videos-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.new-videos h1 {
+  margin: 0;
+  font-size: 2rem;
+  color: var(--text-primary, #cdd6f4);
+}
+
+.new-videos-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.refresh-button, .cancel-all-button {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.refresh-button {
+  background: var(--primary-color, #89b4fa);
+  color: var(--bg-primary, #1e1e2e);
+}
+
+.refresh-button:hover {
+  background: var(--primary-hover, #74c7ec);
+}
+
+.cancel-all-button {
+  background: #f38ba8;
+  color: var(--bg-primary, #1e1e2e);
+}
+
+.cancel-all-button:hover {
+  background: #eba0ac;
+}
+
+.cancel-all-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  font-size: 1.2rem;
+  color: var(--text-secondary, #a6adc8);
+}
+
+.no-videos {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  font-size: 1.2rem;
+  color: var(--text-secondary, #a6adc8);
+  text-align: center;
+}
+
+.new-videos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.new-video-card {
+  background: var(--card-bg, #181825);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.new-video-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.video-thumbnail {
+  width: 100%;
+  height: 180px;
+  overflow: hidden;
+  background: var(--bg-secondary, #313244);
+}
+
+.video-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.video-info {
+  padding: 1rem;
+}
+
+.video-title {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary, #cdd6f4);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.channel-name {
+  margin: 0 0 0.25rem 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary, #a6adc8);
+}
+
+.upload-date {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-muted, #6c7086);
+}
+
+.video-actions {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0 1rem 1rem;
+}
+
+.download-button {
+  flex: 1;
+  padding: 0.75rem;
+  background: var(--primary-color, #89b4fa);
+  color: var(--bg-primary, #1e1e2e);
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.download-button:hover {
+  background: var(--primary-hover, #74c7ec);
+}
+
+.cancel-button {
+  flex: 1;
+  padding: 0.75rem;
+  background: var(--bg-secondary, #313244);
+  color: var(--text-primary, #cdd6f4);
+  border: 1px solid var(--border-color, #45475a);
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.cancel-button:hover {
+  background: var(--bg-hover, #313244);
+}
+
+/* Downloading animation */
+.downloading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Disabled button styles */
+.download-button:disabled,
+.cancel-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  .new-videos {
+    padding: 0.5rem;
+  }
+
+  .new-videos h1 {
+    font-size: 1.5rem;
+  }
+
+  .new-videos-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .video-thumbnail {
+    height: 160px;
+  }
+}

@@ -5,6 +5,7 @@ import VideoPlayer from '../../components/VideoPlayer/VideoPlayer'
 import VideoSidebar from '../../components/VideoSidebar/VideoSidebar'
 import { ThumbsUp, ThumbsDown, Share2, Download, MoreVertical, Trash2, Trash, AlertTriangle, Monitor, Folder, Camera } from 'lucide-react'
 import './Watch.css'
+import { formatDate } from '../../utils/format'
 
 const Watch = ({ videos, fetchVideos }) => {
   const { id } = useParams()
@@ -283,7 +284,7 @@ const Watch = ({ videos, fetchVideos }) => {
           <div className="watch__meta">
             <div className="watch__stats">
               <span className="watch__views">{video.views} views</span>
-              <span className="watch__date">{video.uploadDate}</span>
+              <span className="watch__date">{formatDate(video.uploadDate)}</span>
               {video.category && (
                 <span className="watch__category">{categoryDisplay}</span>
               )}

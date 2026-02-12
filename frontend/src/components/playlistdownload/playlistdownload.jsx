@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { API_BASE_URL } from '../../config'
 import { useDownload } from '../../hooks/useDownload'
 import { 
@@ -22,6 +23,7 @@ import {
 import './playlistdownload.css'
 
 const PlaylistDownload = () => {
+  const navigate = useNavigate()
   const [url, setUrl] = useState('')
   const [processingStatus, setProcessingStatus] = useState('idle') // idle, fetching_list, processing_videos, done
   const [playlistVideos, setPlaylistVideos] = useState([])
@@ -316,6 +318,8 @@ const PlaylistDownload = () => {
       setShowNewDirInput(false)
       setNewDirName('')
     }
+    
+    navigate('/download/progress')
   }
 
   const formatFileSize = (bytes) => {

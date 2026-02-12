@@ -1,0 +1,433 @@
+.subscriptions {
+  padding: 1rem;
+  background: var(--bg-primary, #1e1e2e);
+  color: var(--text-primary, #cdd6f4);
+  min-height: 100%;
+}
+
+.subscriptions h1 {
+  margin: 0 0 2rem 0;
+  font-size: 2rem;
+  color: var(--text-primary, #cdd6f4);
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  font-size: 1.2rem;
+  color: var(--text-secondary, #a6adc8);
+}
+
+.subscriptions-header {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.check-all-button {
+  padding: 0.75rem 1.5rem;
+  background: var(--primary-color, #89b4fa);
+  color: var(--bg-primary, #1e1e2e);
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.check-all-button:hover {
+  background: var(--primary-hover, #74c7ec);
+}
+
+  .check-all-date-button {
+    padding: 0.75rem 1.5rem;
+    background: var(--warning-color, #f9e2af);
+    color: var(--bg-primary, #1e1e2e);
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+
+  .check-all-date-button:hover {
+    background: #fca5a5;
+  }
+
+  .add-button {
+    padding: 0.75rem 1.5rem;
+    background: var(--success-color, #a6e3a1);
+    color: var(--bg-primary, #1e1e2e);
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+
+.add-button:hover {
+  background: #94e2d5;
+}
+
+.add-form {
+  background: var(--card-bg, #181825);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.add-form h2 {
+  margin: 0 0 1.5rem 0;
+  font-size: 1.5rem;
+  color: var(--text-primary, #cdd6f4);
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--text-primary, #cdd6f4);
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.75rem;
+  background: var(--bg-secondary, #313244);
+  color: var(--text-primary, #cdd6f4);
+  border: 1px solid var(--border-color, #45475a);
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--primary-color, #89b4fa);
+  box-shadow: 0 0 0 3px rgba(137, 180, 250, 0.1);
+}
+
+  .form-group select {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--bg-secondary, #313244);
+    color: var(--text-primary, #cdd6f4);
+    border: 1px solid var(--border-color, #45475a);
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+
+  .form-group select:focus {
+    outline: none;
+    border-color: var(--primary-color, #89b4fa);
+    box-shadow: 0 0 0 3px rgba(137, 180, 250, 0.1);
+  }
+
+  .form-group select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .form-group input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .error-message {
+  padding: 0.75rem;
+  background: rgba(243, 139, 168, 0.1);
+  color: var(--error-color, #f38ba8);
+  border: 1px solid var(--error-color, #f38ba8);
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.submit-button {
+  flex: 1;
+  min-width: 150px;
+  padding: 0.75rem;
+  background: var(--primary-color, #89b4fa);
+  color: var(--bg-primary, #1e1e2e);
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.submit-button:hover:enabled {
+  background: var(--primary-hover, #74c7ec);
+}
+
+.submit-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cancel-button {
+  flex: 1;
+  min-width: 150px;
+  padding: 0.75rem;
+  background: var(--bg-secondary, #313244);
+  color: var(--text-primary, #cdd6f4);
+  border: 1px solid var(--border-color, #45475a);
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.cancel-button:hover:enabled {
+  background: var(--bg-hover, #313244);
+}
+
+.cancel-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.no-subscriptions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  font-size: 1.2rem;
+  color: var(--text-secondary, #a6adc8);
+  text-align: center;
+}
+
+.subscriptions-list {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.subscription-card {
+  background: var(--card-bg, #181825);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.subscription-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.subscription-info h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.5rem;
+  color: var(--text-primary, #cdd6f4);
+}
+
+.channel-url {
+  margin: 0 0 1.5rem 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary, #a6adc8);
+  word-break: break-all;
+}
+
+.subscription-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.detail-item .label {
+  font-size: 0.8rem;
+  color: var(--text-muted, #6c7086);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-item .value {
+  font-size: 0.9rem;
+  color: var(--text-primary, #cdd6f4);
+  font-weight: 500;
+}
+
+.detail-item .value.enabled {
+  color: var(--success-color, #a6e3a1);
+}
+
+.detail-item .value.disabled {
+  color: var(--error-color, #f38ba8);
+}
+
+.detail-item.error {
+  grid-column: 1 / -1;
+}
+
+.detail-item.error .value {
+  color: var(--error-color, #f38ba8);
+}
+
+.subscription-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.check-button {
+  flex: 1;
+  min-width: 120px;
+  padding: 0.75rem;
+  background: var(--primary-color, #89b4fa);
+  color: var(--bg-primary, #1e1e2e);
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.check-button:hover {
+  background: var(--primary-hover, #74c7ec);
+}
+
+.toggle-auto-button {
+  flex: 1;
+  min-width: 120px;
+  padding: 0.75rem;
+  background: var(--bg-secondary, #313244);
+  color: var(--text-primary, #cdd6f4);
+  border: 1px solid var(--border-color, #45475a);
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.toggle-auto-button:hover {
+  background: var(--bg-hover, #313244);
+}
+
+.delete-button {
+  flex: 1;
+  min-width: 120px;
+  padding: 0.75rem;
+  background: var(--error-color, #f38ba8);
+  color: var(--bg-primary, #1e1e2e);
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+  .check-date-button {
+    flex: 1;
+    min-width: 120px;
+    padding: 0.75rem;
+    background: var(--warning-color, #f9e2af);
+    color: var(--bg-primary, #1e1e2e);
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+
+  .check-date-button:hover {
+    background: #fca5a5;
+  }
+
+  .quality-select {
+    background: var(--bg-secondary, #313244);
+    color: var(--text-primary, #cdd6f4);
+    border: 1px solid var(--border-color, #45475a);
+    border-radius: 4px;
+    padding: 0.25rem;
+    font-size: 0.9rem;
+  }
+
+  /* Modal Styles */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+
+  .modal {
+    background: var(--card-bg, #181825);
+    border-radius: 8px;
+    padding: 2rem;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  }
+
+  .modal h2 {
+    margin: 0 0 1.5rem 0;
+    font-size: 1.5rem;
+    color: var(--text-primary, #cdd6f4);
+  }
+
+@media (max-width: 768px) {
+  .subscriptions {
+    padding: 0.5rem;
+  }
+
+  .subscriptions h1 {
+    font-size: 1.5rem;
+  }
+
+  .subscriptions-header {
+    flex-direction: column;
+  }
+
+  .check-all-button,
+  .add-button {
+    width: 100%;
+  }
+
+  .subscription-details {
+    grid-template-columns: 1fr;
+  }
+
+  .subscription-actions {
+    flex-direction: column;
+  }
+
+  .check-button,
+  .toggle-auto-button,
+  .delete-button {
+    width: 100%;
+  }
+}

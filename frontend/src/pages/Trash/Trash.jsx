@@ -3,6 +3,7 @@ import { API_BASE_URL } from '../../config'
 import { useNavigate } from 'react-router-dom'
 import { Trash2, RefreshCw, AlertTriangle, FileVideo, Play, ExternalLink } from 'lucide-react'
 import './Trash.css'
+import { formatDate } from '../../utils/format'
 
 const Trash = ({ fetchVideos }) => {
   const [trashVideos, setTrashVideos] = useState([])
@@ -181,7 +182,7 @@ const Trash = ({ fetchVideos }) => {
                       <span className="trash-video-type">{video.type}</span>
                     </div>
                     <div className="trash-video-date">
-                      <span>Deleted: {new Date(video.deletedDate).toLocaleDateString()} {new Date(video.deletedDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                      <span>Deleted: {formatDate(video.deletedDate)} {new Date(video.deletedDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                     </div>
                   </div>
                   

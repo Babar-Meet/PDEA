@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { API_BASE_URL } from '../../config'
 import { useDownload } from '../../hooks/useDownload'
+import { useNavigate, Link } from 'react-router-dom'
 import {
   Download,
   Search,
@@ -13,6 +14,7 @@ import {
 import './directdownload.css'
 
 const DirectDownload = () => {
+  const navigate = useNavigate()
   const { startDirectDownload, downloads, directVideoData, setDirectVideoData } = useDownload()
 
   // Initialize from Redux or defaults
@@ -89,6 +91,8 @@ const DirectDownload = () => {
       })
       if (!result.success) {
         setError(result.error || 'Failed to start direct download')
+      } else {
+        navigate('/download/progress')
       }
     } finally {
       setStartingDirect(false)
@@ -175,6 +179,8 @@ const DirectDownload = () => {
 
       if (!result.success) {
         setError(result.error || 'Failed to start download')
+      } else {
+        navigate('/download/progress')
       }
     } finally {
       setStartingPlanned(false)

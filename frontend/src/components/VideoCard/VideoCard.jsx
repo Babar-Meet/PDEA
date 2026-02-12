@@ -3,7 +3,7 @@ import { API_BASE_URL } from '../../config'
 import { Link } from 'react-router-dom'
 import { Play, MoreVertical, Folder, Trash2, Trash } from 'lucide-react'
 import './VideoCard.css'
-import { formatViews } from '../../utils/format'
+import { formatViews, formatDate } from '../../utils/format'
 
 const VideoCard = ({ video, compact = false, fetchVideos }) => {
   const {
@@ -139,7 +139,7 @@ const VideoCard = ({ video, compact = false, fetchVideos }) => {
           <span>•</span>
           <span>{formatViews(views)} views</span>
             {/* <span>•</span> */}
-          <span>{uploadDate}</span>
+          <span>{formatDate(uploadDate)}</span>
         </div>
         
         <div className="video-card__file-info">
@@ -277,7 +277,7 @@ const VideoCard = ({ video, compact = false, fetchVideos }) => {
           <div className="video-card__stats">
             <span>{formatViews(views)} views</span>
             {/* <span>•</span> */}
-            <span>{uploadDate}</span>
+            <span>{formatDate(uploadDate)}</span>
           </div>
           
           <div className="video-card__file-info">

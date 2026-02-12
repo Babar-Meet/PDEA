@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { API_BASE_URL } from '../../config'
+import { formatDate } from '../../utils/format'
 import { useDownload } from '../../hooks/useDownload'
 import { 
   Download, 
@@ -18,6 +20,7 @@ import {
 import './simpledownload.css'
 
 const SimpleDownload = () => {
+  const navigate = useNavigate()
   const { startDownload, downloads, simpleVideoData, setSimpleVideoData } = useDownload()
 
   // Initialize from Redux or defaults
@@ -160,6 +163,7 @@ const SimpleDownload = () => {
         setShowNewDirInput(false)
         setNewDirName('')
       }
+      navigate('/download/progress')
     }
   }
 
@@ -275,7 +279,7 @@ const SimpleDownload = () => {
               </div>
               <div className="stat-item">
                 <Calendar size={14} />
-                {metadata.upload_date}
+                {formatDate(metadata.upload_date)}
               </div>
               <div className="stat-item">
                 <Languages size={14} />
