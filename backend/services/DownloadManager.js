@@ -79,7 +79,7 @@ class DownloadManager {
   }
 
   /**
-   * Forcefully kill a process by PID and also kill any yt-dlp processes
+   * Forcefully kill a process by PID
    */
   forceKillProcess(pid) {
     const isWindows = process.platform === 'win32';
@@ -94,11 +94,6 @@ class DownloadManager {
           // Ignore
         }
       }
-      try {
-        execSync(`taskkill /F /IM yt-dlp.exe`, { stdio: 'ignore' });
-      } catch (e) {
-        // No yt-dlp processes
-      }
     } else {
       try {
         process.kill(-pid, 'SIGKILL');
@@ -109,11 +104,6 @@ class DownloadManager {
         process.kill(pid, 'SIGKILL');
       } catch (e) {
         // Ignore
-      }
-      try {
-        execSync(`pkill -9 yt-dlp`, { stdio: 'ignore' });
-      } catch (e) {
-        // No yt-dlp processes
       }
     }
   }
