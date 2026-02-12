@@ -30,9 +30,11 @@ router.post('/cancel/:id', downloadController.cancelDownload);
 // Retry a download
 router.post('/retry/:id', downloadController.retryDownload);
 
+// Cleanup orphaned temp files
+router.post('/cleanup', downloadController.cleanupOrphanedFiles);
+
 // Settings
 router.get('/settings', downloadController.getSettings);
 router.post('/settings', downloadController.updateSettings);
 
 module.exports = router;
-

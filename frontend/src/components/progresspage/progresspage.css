@@ -58,6 +58,39 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
+.cleanup-btn {
+  background: rgba(155, 89, 182, 0.2);
+  border: 1px solid rgba(155, 89, 182, 0.3);
+  color: #bb8fce;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.cleanup-btn:hover {
+  background: rgba(155, 89, 182, 0.3);
+}
+
+.cleanup-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cleanup-message {
+  background: rgba(46, 204, 113, 0.1);
+  border: 1px solid rgba(46, 204, 113, 0.2);
+  color: #2ecc71;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
 .no-downloads {
   display: flex;
   flex-direction: column;

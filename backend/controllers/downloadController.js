@@ -1,4 +1,5 @@
 const downloadService = require('../services/downloadService');
+const downloadManager = require('../services/DownloadManager');
 
 exports.getDirectories = (req, res) => {
   try {
@@ -134,6 +135,16 @@ exports.cancelDownload = (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 };
+
+exports.cleanupOrphanedFiles = (req, res) => {
+  try {
+    const result = downloadManager.cleanupOrphanedFiles();
+    res.json({ success: true, ...result });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
 exports.getSettings = (req, res) => {
   res.json({ success: true, settings: downloadService.settings });
 };

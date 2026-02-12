@@ -7,6 +7,7 @@ import {
   startDirectDownload as startDirectDownloadThunk,
   cancelDownload as cancelDownloadThunk,
   retryDownload as retryDownloadThunk,
+  cleanupOrphanedFiles as cleanupOrphanedFilesThunk,
   setSimpleVideoData as setSimpleVideoDataAction,
   setDirectVideoData as setDirectVideoDataAction,
   clearVideoData as clearVideoDataAction,
@@ -18,6 +19,7 @@ export const useDownload = () => {
   const settings = useSelector((state) => state.download.settings);
   const simpleVideoData = useSelector((state) => state.download.simpleVideoData);
   const directVideoData = useSelector((state) => state.download.directVideoData);
+  const cleanupMessage = useSelector((state) => state.download.cleanupMessage);
 
   const startDirectDownload = async (payload) => {
     try {
@@ -68,6 +70,15 @@ export const useDownload = () => {
     }
   };
 
+  const cleanupOrphanedFiles = async () => {
+    try {
+      await dispatch(cleanupOrphanedFilesThunk()).unwrap();
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   return {
     downloads,
     settings,
@@ -78,9 +89,11 @@ export const useDownload = () => {
     retryDownload,
     updateSettings,
     fetchSettings: () => dispatch(fetchSettingsThunk()),
+    cleanupOrphanedFiles,
 
     simpleVideoData,
     directVideoData,
+    cleanupMessage,
     setSimpleVideoData: (data) => dispatch(setSimpleVideoDataAction(data)),
     setDirectVideoData: (data) => dispatch(setDirectVideoDataAction(data)),
     clearVideoData: () => dispatch(clearVideoDataAction()),

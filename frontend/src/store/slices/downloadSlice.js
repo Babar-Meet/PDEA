@@ -127,11 +127,28 @@ export const retryDownload = createAsyncThunk(
   }
 );
 
+export const cleanupOrphanedFiles = createAsyncThunk(
+  'download/cleanupOrphanedFiles',
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/download/cleanup`, {
+        method: 'POST',
+      });
+      const data = await res.json();
+      if (data.success) return data.message;
+      return rejectWithValue(data.error);
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
 const initialState = {
   downloads: [],
   settings: { maxConcurrentPlaylistDownloads: 3 },
   simpleVideoData: null,
   directVideoData: null,
+  cleanupMessage: null,
 };
 
 const downloadSlice = createSlice({
@@ -147,6 +164,9 @@ const downloadSlice = createSlice({
     clearVideoData: (state) => {
       state.simpleVideoData = null;
       state.directVideoData = null;
+    },
+    clearCleanupMessage: (state) => {
+      state.cleanupMessage = null;
     },
     updateDownloadProgress: (state, action) => {
       const { downloadId, ...updates } = action.payload;
@@ -166,11 +186,17 @@ const downloadSlice = createSlice({
       })
       .addCase(updateSettings.fulfilled, (state, action) => {
         state.settings = action.payload;
+      })
+      .addCase(cleanupOrphanedFiles.fulfilled, (state, action) => {
+        state.cleanupMessage = action.payload;
+      })
+      .addCase(cleanupOrphanedFiles.rejected, (state, action) => {
+        state.cleanupMessage = null;
       });
   },
 });
 
 
-export const { setSimpleVideoData, setDirectVideoData, clearVideoData, updateDownloadProgress } = downloadSlice.actions;
+export const { setSimpleVideoData, setDirectVideoData, clearVideoData, clearCleanupMessage, updateDownloadProgress } = downloadSlice.actions;
 
 export default downloadSlice.reducer;

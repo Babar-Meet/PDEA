@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useDownload } from '../../hooks/useDownload';
 import { formatDate } from '../../utils/format';
 import { 
@@ -11,12 +11,25 @@ import {
   Trash2,
   RefreshCw,
   Video,
-  RotateCcw
+  RotateCcw,
+  AxeIcon
 } from 'lucide-react';
 import './progresspage.css';
 
 const ProgressPage = () => {
-  const { downloads, cancelDownload, fetchDownloads, retryDownload } = useDownload();
+  const { downloads, cancelDownload, fetchDownloads, retryDownload, cleanupOrphanedFiles, cleanupMessage, clearCleanupMessage } = useDownload();
+  const [cancellingIds, setCancellingIds] = useState(new Set());
+  const [cleaning, setCleaning] = useState(false);
+
+  // Clear cleanup message after 5 seconds
+  useEffect(() => {
+    if (cleanupMessage) {
+      const timer = setTimeout(() => {
+        clearCleanupMessage();
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [cleanupMessage, clearCleanupMessage]);
 
   const getStatusIcon = (status) => {
     switch (status) {
@@ -42,6 +55,62 @@ const ProgressPage = () => {
     return formatDate(date);
   };
 
+  const handleCancel = useCallback(async (id) => {
+    // Prevent multiple cancel clicks
+    if (cancellingIds.has(id)) return;
+    
+    setCancellingIds(prev => new Set(prev).add(id));
+    
+    try {
+      await cancelDownload(id);
+      
+      // Fetch fresh data instead of reloading the page
+      setTimeout(() => {
+        fetchDownloads();
+      }, 300);
+    } catch (error) {
+      console.error('Cancel failed:', error);
+      setCancellingIds(prev => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    }
+  }, [cancelDownload, fetchDownloads, cancellingIds]);
+
+  const handleRetry = useCallback(async (id) => {
+    try {
+      await retryDownload(id);
+    } catch (error) {
+      console.error('Retry failed:', error);
+    }
+  }, [retryDownload]);
+
+  const handleRefresh = useCallback(() => {
+    fetchDownloads();
+  }, [fetchDownloads]);
+
+  const handleCleanup = useCallback(async () => {
+    if (cleaning) return;
+    
+    setCleaning(true);
+    try {
+      const success = await cleanupOrphanedFiles();
+      if (success) {
+        // Fetch fresh data instead of reloading
+        setTimeout(() => {
+          fetchDownloads();
+          setCleaning(false);
+        }, 500);
+      } else {
+        setCleaning(false);
+      }
+    } catch (error) {
+      console.error('Cleanup failed:', error);
+      setCleaning(false);
+    }
+  }, [cleanupOrphanedFiles, fetchDownloads, cleaning]);
+
   return (
     <div className="progress-page-container">
       <div className="progress-page-header">
@@ -53,11 +122,25 @@ const ProgressPage = () => {
                  {downloads.filter(d => ['downloading', 'starting', 'queued'].includes(d.status)).length} Active
               </div>
            )}
-          <button className="refresh-btn" onClick={fetchDownloads}>
+          <button 
+            className="cleanup-btn" 
+            onClick={handleCleanup}
+            disabled={cleaning}
+            title="Clean up temporary files"
+          >
+            <AxeIcon size={16} /> {cleaning ? 'Cleaning...' : 'Cleanup'}
+          </button>
+          <button className="refresh-btn" onClick={handleRefresh}>
             <RefreshCw size={16} /> Refresh
           </button>
         </div>
       </div>
+
+      {cleanupMessage && (
+        <div className="cleanup-message">
+          {cleanupMessage}
+        </div>
+      )}
 
       {downloads.length === 0 ? (
         <div className="no-downloads">
@@ -95,7 +178,7 @@ const ProgressPage = () => {
                     {dl.status === 'error' && (
                       <button 
                         className="retry-dl-btn" 
-                        onClick={() => retryDownload(dl.id)}
+                        onClick={() => handleRetry(dl.id)}
                         title="Retry Download"
                       >
                         <RotateCcw size={16} />
@@ -104,10 +187,15 @@ const ProgressPage = () => {
                     {(['downloading', 'starting', 'queued'].includes(dl.status)) && (
                       <button 
                         className="cancel-dl-btn" 
-                        onClick={() => cancelDownload(dl.id)}
+                        onClick={() => handleCancel(dl.id)}
                         title="Cancel Download"
+                        disabled={cancellingIds.has(dl.id)}
                       >
-                        <X size={16} />
+                        {cancellingIds.has(dl.id) ? (
+                          <RefreshCw size={16} className="spin" />
+                        ) : (
+                          <X size={16} />
+                        )}
                       </button>
                     )}
                   </div>
@@ -140,6 +228,11 @@ const ProgressPage = () => {
                   {dl.status === 'error' && dl.error && (
                     <div className="dl-error-msg">
                       {dl.error}
+                    </div>
+                  )}
+                  {dl.status === 'cancelled' && (
+                    <div className="dl-error-msg">
+                      Cancelled by user
                     </div>
                   )}
                 </div>
