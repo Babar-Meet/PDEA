@@ -10,6 +10,33 @@ class DownloadManager {
     this.wsClients = new Set();
   }
 
+  /**
+   * Remove a download from paused_downloads.json if it exists
+   */
+  removeFromPausedDownloads(downloadId) {
+    const publicDir = path.join(__dirname, '../public');
+    const pausedDownloadsPath = path.join(publicDir, 'paused_downloads.json');
+    
+    try {
+      if (fs.existsSync(pausedDownloadsPath)) {
+        const content = fs.readFileSync(pausedDownloadsPath, 'utf8');
+        if (content.trim()) {
+          let pausedDownloads = JSON.parse(content);
+          const initialLength = pausedDownloads.length;
+          pausedDownloads = pausedDownloads.filter(d => d.downloadId !== downloadId);
+          
+          // Only write if we actually removed something
+          if (pausedDownloads.length < initialLength) {
+            fs.writeFileSync(pausedDownloadsPath, JSON.stringify(pausedDownloads, null, 2));
+            console.log(`Removed ${downloadId} from paused_downloads.json`);
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Failed to remove from paused downloads:', e.message);
+    }
+  }
+
   registerWSClient(ws) {
     this.wsClients.add(ws);
     ws.on('close', () => {
@@ -150,6 +177,9 @@ class DownloadManager {
       speed: '0',
       eta: '0'
     });
+
+    // Remove from paused_downloads.json if it was paused before being cancelled
+    this.removeFromPausedDownloads(downloadId);
 
     // Clean up all temporary files including thumbnails
     this.cleanupAllTempFiles(filePath, true);
