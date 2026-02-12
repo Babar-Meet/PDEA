@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../../config';
-import { formatDate } from '../../utils/format';
+import { formatDate, formatDateTime } from '../../utils/format';
 import './subscriptions.css';
 
 const qualityOptions = [
@@ -382,7 +382,7 @@ const Subscriptions = () => {
                   <div className="detail-item">
                     <span className="label">Last Checked:</span>
                     <span className="value">
-                      {formatDate(subscription.last_checked)}
+                      {formatDateTime(subscription.last_checked)}
                     </span>
                   </div>
                   

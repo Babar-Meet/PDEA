@@ -14,3 +14,18 @@ export const formatDate = (date) => {
   const year = d.getFullYear();
   return `${day} ${month} ${year}`;
 }
+
+export const formatTime = (date) => {
+  if (!date) return 'N/A';
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return 'N/A';
+  const hours = String(d.getHours()).padStart(2, '0');
+  const minutes = String(d.getMinutes()).padStart(2, '0');
+  const seconds = String(d.getSeconds()).padStart(2, '0');
+  return `${hours} ${minutes} ${seconds}`;
+}
+
+export const formatDateTime = (date) => {
+  if (!date) return 'N/A';
+  return `${formatDate(date)} ${formatTime(date)}`;
+}

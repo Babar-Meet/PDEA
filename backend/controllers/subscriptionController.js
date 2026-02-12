@@ -101,15 +101,6 @@ async function downloadVideo(req, res) {
     }
     
     await subscriptionService.downloadVideo(video, subscription);
-    
-    // Update last_checked after successful download
-    await subscriptionService.updateSubscription(channelName, {
-      last_checked: new Date().toISOString(),
-      retry_count: 0,
-      last_error: null,
-      last_success: new Date().toISOString()
-    });
-    
     res.json({ message: 'Video downloaded successfully' });
   } catch (error) {
     console.error('Error downloading video:', error);
@@ -180,14 +171,6 @@ async function checkAllSubscriptions(req, res) {
           for (const video of newVideos) {
             await subscriptionService.downloadVideo(video, subscription);
           }
-          
-          // Update last_checked only if download successful
-          await subscriptionService.updateSubscription(subscription.channelName, {
-            last_checked: new Date().toISOString(),
-            retry_count: 0,
-            last_error: null,
-            last_success: new Date().toISOString()
-          });
         }
         
         results.push({
