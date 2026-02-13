@@ -107,4 +107,10 @@ server.listen(PORT, '0.0.0.0', async () => {
   // Initialize subscription service
   await subscriptionService.initialize();
   console.log('📡 Subscription service initialized');
+  
+  // Load paused downloads from previous session
+  const loadedPaused = downloadManager.loadPausedDownloads();
+  if (loadedPaused > 0) {
+    console.log(`⏸️  Loaded ${loadedPaused} paused downloads from previous session`);
+  }
 });

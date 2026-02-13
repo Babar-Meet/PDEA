@@ -163,39 +163,40 @@ class DownloadManager {
     this.terminatedIds.add(downloadId);
     
     const processData = this.processes.get(downloadId);
+    
+    // Get download info first before any processing
+    const download = this.downloads.get(downloadId);
+    const filePath = processData?.filePath;
+    
+    // Update status to 'cancelled' FIRST - before killing process
+    // This ensures the status is set even if process handling fails
+    if (download) {
+      this.downloads.set(downloadId, {
+        ...download,
+        status: 'cancelled',
+        error: 'Download cancelled by user',
+        progress: 0,
+        speed: '0',
+        eta: '0'
+      });
+      this.broadcastProgress(downloadId, this.downloads.get(downloadId));
+    }
+    
     if (!processData) {
-      // Check if download exists but no process running
-      const download = this.downloads.get(downloadId);
-      if (download) {
-        // Update status FIRST, then clean up
-        this.updateProgress(downloadId, {
-          status: 'cancelled',
-          error: 'Download cancelled by user'
-        });
-      }
+      // No process running - already handled above
       return false;
     }
 
-    // Immediately mark as cancelled to prevent any further progress updates
+    // Mark as cancelled to prevent any further progress updates
     processData.cancelled = true;
     
-    const { process, filePath } = processData;
+    const { process } = processData;
     const pid = process.pid;
     
-    // Update status to 'cancelled' BEFORE killing the process
-    // This ensures the close handler sees the correct status
-    this.updateProgress(downloadId, {
-      status: 'cancelled',
-      error: 'Download cancelled by user',
-      progress: 0,
-      speed: '0',
-      eta: '0'
-    });
-
     // Remove from paused_downloads.json if it was paused before being cancelled
     this.removeFromPausedDownloads(downloadId);
 
-    // Forcefully kill ONLY this specific process
+    // Forcefully kill the process
     if (pid) {
       this.forceKillProcess(pid);
     } else {
@@ -206,10 +207,12 @@ class DownloadManager {
       }
     }
 
-    // Clean up all temporary files including thumbnails
-    this.cleanupAllTempFiles(filePath, true);
+    // Clean up all temporary files including thumbnails in video directory
+    if (filePath) {
+      this.cleanupAllTempFiles(filePath, true);
+    }
 
-    // Now remove from processes map (close handler will see it was cancelled)
+    // Now remove from processes map
     this.processes.delete(downloadId);
 
     console.log(`Download cancelled: ${downloadId}`);
@@ -225,52 +228,34 @@ class DownloadManager {
     this.terminatedIds.add(downloadId);
     
     const processData = this.processes.get(downloadId);
+    
+    // Get download info first
+    const download = this.downloads.get(downloadId);
+    const filePath = processData?.filePath;
+    
+    // Update status to 'paused' FIRST - before killing process
+    // This ensures the status is set even if process handling fails
+    if (download) {
+      this.downloads.set(downloadId, {
+        ...download,
+        status: 'paused',
+        error: 'Download paused by user',
+        speed: '0',
+        eta: '0'
+      });
+      this.broadcastProgress(downloadId, this.downloads.get(downloadId));
+    }
+    
     if (!processData) {
-      // Check if download exists but no process running
-      // This could be a queued download - check the status
-      const download = this.downloads.get(downloadId);
-      if (download) {
-        if (download.status === 'queued') {
-          // For queued downloads, we can't pause - treat as cancelled
-          // Remove from any queue handling if needed
-          this.updateProgress(downloadId, {
-            status: 'cancelled',
-            error: 'Queued download cancelled (pause not supported for queued)',
-            progress: 0,
-            speed: '0',
-            eta: '0'
-          });
-        } else {
-          this.updateProgress(downloadId, {
-            status: 'paused',
-            error: 'Download paused by user'
-          });
-        }
-      }
+      // No process running
       return false;
     }
 
-    // Mark as paused to prevent any further progress updates
+    // Mark as paused
     processData.paused = true;
     
-    const { process, filePath } = processData;
+    const { process } = processData;
     const pid = process.pid;
-    
-    // Get download info to save
-    const download = this.downloads.get(downloadId);
-    if (!download) {
-      this.terminatedIds.delete(downloadId);
-      return false;
-    }
-
-    // Update status to 'paused' BEFORE killing the process
-    // This ensures the close handler sees the correct status
-    this.updateProgress(downloadId, {
-      status: 'paused',
-      error: 'Download paused by user',
-      speed: '0',
-      eta: '0'
-    });
 
     // Save paused download info to JSON file
     const publicDir = path.join(__dirname, '../public');
@@ -290,27 +275,29 @@ class DownloadManager {
     }
 
     // Add this download to paused list
-    const pausedInfo = {
-      downloadId: downloadId,
-      url: download.url,
-      format_id: download.formatId,
-      save_dir: download.saveDir,
-      title: download.title,
-      thumbnail: download.thumbnail,
-      filename: download.filename,
-      progress: download.progress,
-      filePath: filePath,
-      timestamp: new Date().toISOString()
-    };
+    if (download) {
+      const pausedInfo = {
+        downloadId: downloadId,
+        url: download.url,
+        format_id: download.formatId,
+        save_dir: download.saveDir,
+        title: download.title,
+        thumbnail: download.thumbnail,
+        filename: download.filename,
+        progress: download.progress,
+        filePath: filePath,
+        timestamp: new Date().toISOString()
+      };
 
-    // Remove any existing entry for this downloadId
-    pausedDownloads = pausedDownloads.filter(d => d.downloadId !== downloadId);
-    pausedDownloads.push(pausedInfo);
-    
-    try {
-      fs.writeFileSync(pausedDownloadsPath, JSON.stringify(pausedDownloads, null, 2));
-    } catch (e) {
-      console.error('Failed to save paused download info:', e);
+      // Remove any existing entry for this downloadId
+      pausedDownloads = pausedDownloads.filter(d => d.downloadId !== downloadId);
+      pausedDownloads.push(pausedInfo);
+      
+      try {
+        fs.writeFileSync(pausedDownloadsPath, JSON.stringify(pausedDownloads, null, 2));
+      } catch (e) {
+        console.error('Failed to save paused download info:', e);
+      }
     }
 
     // Now kill the process
@@ -324,7 +311,7 @@ class DownloadManager {
       }
     }
 
-    // Remove from processes map after killing (close handler will see it was paused)
+    // Remove from processes map
     this.processes.delete(downloadId);
 
     console.log(`Download paused: ${downloadId}`);
@@ -508,6 +495,54 @@ class DownloadManager {
     return 0;
   }
 
+  /**
+   * Load paused downloads from file into downloads map on startup
+   * This ensures paused downloads are visible in the UI after app restart
+   */
+  loadPausedDownloads() {
+    const publicDir = path.join(__dirname, '../public');
+    const pausedDownloadsPath = path.join(publicDir, 'paused_downloads.json');
+    
+    try {
+      if (fs.existsSync(pausedDownloadsPath)) {
+        const content = fs.readFileSync(pausedDownloadsPath, 'utf8');
+        if (content.trim()) {
+          const pausedDownloads = JSON.parse(content);
+          
+          for (const pausedInfo of pausedDownloads) {
+            // Add to downloads map with paused status
+            this.downloads.set(pausedInfo.downloadId, {
+              id: pausedInfo.downloadId,
+              status: 'paused',
+              progress: pausedInfo.progress || 0,
+              speed: '0',
+              eta: '0',
+              error: 'Download paused by user',
+              url: pausedInfo.url,
+              title: pausedInfo.title,
+              thumbnail: pausedInfo.thumbnail,
+              filename: pausedInfo.filename,
+              saveDir: pausedInfo.save_dir,
+              formatId: pausedInfo.format_id,
+              timestamp: pausedInfo.timestamp
+            });
+            
+            // Add to terminatedIds so updates are blocked
+            this.terminatedIds.add(pausedInfo.downloadId);
+            
+            console.log(`Loaded paused download: ${pausedInfo.title || pausedInfo.downloadId}`);
+          }
+          
+          console.log(`Loaded ${pausedDownloads.length} paused downloads`);
+          return pausedDownloads.length;
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load paused downloads:', e.message);
+    }
+    return 0;
+  }
+
   removeDownload(downloadId) {
     // Remove from downloads map
     this.downloads.delete(downloadId);
@@ -595,36 +630,41 @@ class DownloadManager {
       // Directory might not exist
     }
 
-    // Also clean up thumbnail if requested (yt-dlp saves thumbnails in same dir)
+    // Also clean up thumbnail if requested (yt-dlp saves thumbnails in same dir during download)
     if (includeThumbnail && videoTitle) {
       const thumbnailExtensions = ['.jpg', '.webp', '.png', '.gif', '.jpeg', '.thumb'];
+      // Also look for common thumbnail name patterns from yt-dlp
+      const thumbnailPatterns = [
+        /^\w+/,  // Any filename (yt-dlp often saves as video ID)
+      ];
       
       try {
         if (fs.existsSync(dir)) {
           const files = fs.readdirSync(dir);
           files.forEach(file => {
             const ext = path.extname(file).toLowerCase();
-            if (thumbnailExtensions.includes(ext)) {
-              // Check if this thumbnail matches our video title
-              // Try multiple matching strategies
-              const fileWithoutExt = file.replace(/\.[^/.]+$/, '');
-              
-              // Strategy 1: Exact match with video title
-              // Strategy 2: Video title is contained in filename
-              // Strategy 3: Filename contains significant parts of video title
-              
+            const fileWithoutExt = file.replace(/\.[^/.]+$/, '');
+            
+            // Check if it's a thumbnail file
+            const isThumbnailExt = thumbnailExtensions.includes(ext);
+            
+            if (isThumbnailExt) {
+              // Check if this thumbnail matches our video title OR
+              // is a common yt-dlp thumbnail pattern (often just video ID or any image)
               const videoTitleLower = videoTitle.toLowerCase();
               const fileLower = fileWithoutExt.toLowerCase();
               
-              // Check if video title is in the filename (flexible matching)
+              // Match if: exact title, title in filename, filename in title, or partial match
               const isMatch = 
                 fileLower === videoTitleLower ||
                 fileLower.includes(videoTitleLower) ||
                 videoTitleLower.includes(fileLower) ||
-                // Check for partial matches with key words
+                // Also check for partial word matches (3+ char words)
                 (videoTitleLower.split(' ').filter(w => w.length > 3).some(word => 
                   fileLower.includes(word)
-                ));
+                )) ||
+                // If we have a video ID from download, check for that too
+                (download?.id && fileLower.includes(download.id));
               
               if (isMatch) {
                 const fullPath = path.join(dir, file);
