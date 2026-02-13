@@ -37,7 +37,7 @@ YT Local Desktop/
 ## 🎯 Features
 
 ### Video Download
-- **Multiple Quality Options**: Download videos in 360p, 480p, 720p, 1080p, 1440p, or 2160p (4K)
+- **Multiple Quality Options**: Download videos in 360p, 480p, 720p, 1080p, 1440p, 2160p (4k), 8K  or higher if avable
 - **Audio Language Selection**: Choose from available audio languages
 - **Playlist Downloads**: Download entire playlists
 - **Batch Processing**: Queue multiple videos for download
