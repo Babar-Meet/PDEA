@@ -248,8 +248,9 @@ const VideoPlayer = forwardRef(({ video, videos, onNextVideo, onPreviousVideo, c
 
   const saveProgress = async (time) => {
     if (!video || !time) return;
+    
     try {
-      await fetch(`${API_BASE_URL}/api/videos/progress`, {
+      const response = await fetch(`${API_BASE_URL}/api/videos/progress`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -259,6 +260,10 @@ const VideoPlayer = forwardRef(({ video, videos, onNextVideo, onPreviousVideo, c
           timestamp: time
         }),
       });
+      
+      if (!response.ok) {
+        console.error('Backend returned error:', response.status, response.statusText);
+      }
     } catch (error) {
       console.error("Error saving progress:", error);
     }
@@ -868,28 +873,23 @@ const VideoPlayer = forwardRef(({ video, videos, onNextVideo, onPreviousVideo, c
   const progressSaveTimeoutRef = useRef(null);
   const pendingProgressRef = useRef(null);
 
-  const debouncedSaveProgress = (time) => {
-    pendingProgressRef.current = time;
-    
-    if (progressSaveTimeoutRef.current) {
-      clearTimeout(progressSaveTimeoutRef.current);
-    }
-    
-    progressSaveTimeoutRef.current = setTimeout(() => {
-      if (pendingProgressRef.current !== null) {
-        saveProgress(pendingProgressRef.current);
-        lastSavedTimeRef.current = pendingProgressRef.current;
-        pendingProgressRef.current = null;
-      }
-    }, 10000);
-  };
+  // No longer using debounce for periodic updates to ensure it actually fires during playback
+  // progressSaveTimeoutRef.current will effectively be unused for periodic updates but kept for cleanup compatibility
 
   const handleTimeUpdate = () => {
+    if (!videoRef.current) return;
+    
     const time = videoRef.current.currentTime;
     setCurrentTime(time);
     
-    if (Math.abs(time - lastSavedTimeRef.current) > 10) {
-      debouncedSaveProgress(time);
+    // Update pending progress for pause/unload handlers
+    pendingProgressRef.current = time;
+    
+    // Save progress more frequently - every 5 seconds of playback
+    // We check against lastSavedTimeRef to ensure we don't save too often
+    if (Math.abs(time - lastSavedTimeRef.current) > 5) {
+      saveProgress(time);
+      lastSavedTimeRef.current = time;
     }
   }
 

@@ -122,6 +122,7 @@ exports.getThumbnailProgress = async (req, res) => {
 // Save video progress
 exports.saveVideoProgress = async (req, res) => {
   try {
+    console.log('Received saveProgress request:', req.body); // Debug log
     const { videoId, timestamp } = req.body;
     
     if (!videoId || timestamp === undefined) {
@@ -134,8 +135,10 @@ exports.saveVideoProgress = async (req, res) => {
     const success = videoService.saveProgress(videoId, timestamp);
     
     if (success) {
+      console.log('Progress saved successfully'); // Debug log
       res.json({ success: true });
     } else {
+      console.log('Failed to save progress'); // Debug log
       res.status(500).json({ success: false, error: 'Failed to save progress' });
     }
   } catch (error) {

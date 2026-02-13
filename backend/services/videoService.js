@@ -11,7 +11,9 @@ exports.getAllProgress = () => {
   try {
     if (fs.existsSync(progressFile)) {
       const data = fs.readFileSync(progressFile, 'utf8');
-      return JSON.parse(data);
+      if (data.trim()) {
+        return JSON.parse(data);
+      }
     }
   } catch (error) {
     console.error('Error reading progress file:', error);
