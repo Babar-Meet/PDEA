@@ -743,6 +743,22 @@ class DownloadService {
     });
 
     process.on('close', (code) => {
+      // Check if this download was intentionally terminated (cancelled/paused)
+      // Use the terminatedIds set which is the source of truth
+      if (downloadManager.isTerminated(downloadId)) {
+        // This was intentionally terminated, don't update status
+        // Notify subscription service about cancelled/paused download
+        if (typeof subscriptionService.decrementActiveDownloads === 'function') {
+          subscriptionService.decrementActiveDownloads();
+        }
+        
+        if (isBatch) {
+          this.activeBatchProcesses--;
+          setTimeout(() => this.processQueue(), 500);
+        }
+        return;
+      }
+      
       const processData = downloadManager.processes.get(downloadId);
       const downloadStatus = downloadManager.getDownload(downloadId);
       
@@ -779,6 +795,9 @@ class DownloadService {
   retryDownload(id) {
     const status = downloadManager.getDownload(id);
     if (!status) return false;
+
+    // Clear the terminated status when retrying
+    downloadManager.terminatedIds.delete(id);
 
     downloadManager.updateProgress(id, {
       status: 'starting',
@@ -841,10 +860,55 @@ class DownloadService {
   }
 
   cancelDownload(id) {
+    // First check if it's in the queue (not started yet)
+    const queueIndex = this.queue.findIndex(item => item.downloadId === id);
+    if (queueIndex !== -1) {
+      // Remove from queue
+      this.queue.splice(queueIndex, 1);
+      
+      // Also mark as terminated in DownloadManager
+      downloadManager.terminatedIds.add(id);
+      
+      // Update status to cancelled
+      downloadManager.updateProgress(id, {
+        status: 'cancelled',
+        error: 'Download cancelled by user',
+        progress: 0,
+        speed: '0',
+        eta: '0'
+      });
+      
+      return true;
+    }
+    
+    // If already running, use DownloadManager
     return downloadManager.cancelDownload(id);
   }
 
   pauseDownload(id) {
+    // First check if it's in the queue (not started yet)
+    const queueIndex = this.queue.findIndex(item => item.downloadId === id);
+    if (queueIndex !== -1) {
+      // For queued downloads, just cancel them since pausing doesn't make sense
+      // (they haven't started yet)
+      this.queue.splice(queueIndex, 1);
+      
+      // Also mark as terminated in DownloadManager
+      downloadManager.terminatedIds.add(id);
+      
+      // Update status to cancelled (not paused - it was in queue)
+      downloadManager.updateProgress(id, {
+        status: 'cancelled',
+        error: 'Queued download cancelled by user',
+        progress: 0,
+        speed: '0',
+        eta: '0'
+      });
+      
+      return true;
+    }
+    
+    // If already running, use DownloadManager
     return downloadManager.pauseDownload(id);
   }
 
@@ -853,10 +917,14 @@ class DownloadService {
   }
 
   pauseAllDownloads() {
+    // Clear all terminated IDs first to allow fresh pause operations
+    downloadManager.terminatedIds.clear();
     return downloadManager.pauseAllDownloads();
   }
 
   resumeAllDownloads() {
+    // Clear all terminated IDs first to allow fresh resume operations
+    downloadManager.terminatedIds.clear();
     return downloadManager.resumeAllDownloads();
   }
 
@@ -884,6 +952,18 @@ class DownloadService {
   removeDownload(id) {
     const download = downloadManager.getDownload(id);
     if (!download) return false;
+    
+    // Clear terminated status if it was cancelled/paused
+    downloadManager.terminatedIds.delete(id);
+    
+    // Also remove from paused_downloads.json if it was paused
+    downloadManager.removeFromPausedDownloads(id);
+    
+    // Also remove from queue if it's there
+    const queueIndex = this.queue.findIndex(item => item.downloadId === id);
+    if (queueIndex !== -1) {
+      this.queue.splice(queueIndex, 1);
+    }
     
     downloadManager.removeDownload(id);
     return true;

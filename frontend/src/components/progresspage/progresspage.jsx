@@ -20,11 +20,7 @@ import './progresspage.css';
 
 const ProgressPage = () => {
   const { downloads, cancelDownload, fetchDownloads, retryDownload, cleanupOrphanedFiles, cleanupMessage, clearCleanupMessage, removeDownload, pauseDownload, resumeDownload, pauseAllDownloads, resumeAllDownloads, fetchPausedCount, fetchPausedDownloads, pausedDownloads } = useDownload();
-  const [cancellingIds, setCancellingIds] = useState( new Set());
   const [cleaning, setCleaning] = useState(new Set());
-  const [removingIds, setRemovingIds] = useState(new Set());
-  const [pausingIds, setPausingIds] = useState(new Set());
-  const [resumingIds, setResumingIds] = useState(new Set());
 
   // Load paused downloads on mount
   useEffect(() => {
@@ -67,94 +63,54 @@ const ProgressPage = () => {
   };
 
   const handleCancel = useCallback(async (id) => {
-    // Prevent multiple cancel clicks
-    if (cancellingIds.has(id)) return;
-    
-    setCancellingIds(prev => new Set(prev).add(id));
+    // Allow cancel even if already in progress - just do it
+    // Don't block based on current state - just execute
     
     try {
-      await cancelDownload(id);
-      // Reset cancelling state immediately after cancel completes
-      setCancellingIds(prev => {
-        const next = new Set(prev);
-        next.delete(id);
-        return next;
-      });
-      // Fetch fresh data
-      setTimeout(() => {
-        fetchDownloads();
-      }, 300);
+      const result = await cancelDownload(id);
+      // Always fetch fresh data after cancel attempt
+      // No matter if it succeeded or failed, get latest state
+      fetchDownloads();
     } catch (error) {
       console.error('Cancel failed:', error);
-      setCancellingIds(prev => {
-        const next = new Set(prev);
-        next.delete(id);
-        return next;
-      });
+      fetchDownloads();
     }
-  }, [cancelDownload, fetchDownloads, cancellingIds]);
+  }, [cancelDownload, fetchDownloads]);
 
   const handlePause = useCallback(async (id) => {
-    // Prevent multiple pause clicks
-    if (pausingIds.has(id)) return;
-    
-    setPausingIds(prev => new Set(prev).add(id));
+    // Allow pause even if already in progress - just do it
     
     try {
-      await pauseDownload(id);
-      setPausingIds(prev => {
-        const next = new Set(prev);
-        next.delete(id);
-        return next;
-      });
-      setTimeout(() => {
-        fetchDownloads();
-      }, 300);
+      const result = await pauseDownload(id);
+      // Always fetch fresh data after pause attempt
+      fetchDownloads();
     } catch (error) {
       console.error('Pause failed:', error);
-      setPausingIds(prev => {
-        const next = new Set(prev);
-        next.delete(id);
-        return next;
-      });
+      fetchDownloads();
     }
-  }, [pauseDownload, fetchDownloads, pausingIds]);
+  }, [pauseDownload, fetchDownloads]);
 
   const handleResume = useCallback(async (id) => {
-    // Prevent multiple resume clicks
-    if (resumingIds.has(id)) return;
-    
-    setResumingIds(prev => new Set(prev).add(id));
+    // Allow resume even if already in progress - just do it
     
     try {
-      await resumeDownload(id);
-      setResumingIds(prev => {
-        const next = new Set(prev);
-        next.delete(id);
-        return next;
-      });
-      setTimeout(() => {
-        fetchDownloads();
-      }, 300);
+      const result = await resumeDownload(id);
+      // Always fetch fresh data after resume attempt
+      fetchDownloads();
     } catch (error) {
       console.error('Resume failed:', error);
-      setResumingIds(prev => {
-        const next = new Set(prev);
-        next.delete(id);
-        return next;
-      });
+      fetchDownloads();
     }
-  }, [resumeDownload, fetchDownloads, resumingIds]);
+  }, [resumeDownload, fetchDownloads]);
 
   const handleRetry = useCallback(async (id) => {
     try {
       await retryDownload(id);
-      // Refresh downloads to update status (show cancel button when status becomes 'starting')
-      setTimeout(() => {
-        fetchDownloads();
-      }, 300);
+      // Refresh downloads immediately
+      fetchDownloads();
     } catch (error) {
       console.error('Retry failed:', error);
+      fetchDownloads();
     }
   }, [retryDownload, fetchDownloads]);
 
@@ -244,26 +200,17 @@ const ProgressPage = () => {
   }, [resumeAllDownloads, fetchDownloads, cleaning]);
 
   const handleRemove = useCallback(async (id) => {
-    // Prevent multiple remove clicks
-    if (removingIds.has(id)) return;
-    
-    setRemovingIds(prev => new Set(prev).add(id));
+    // Allow remove - just do it
     
     try {
       await removeDownload(id);
-      // Fetch fresh data after removing
-      setTimeout(() => {
-        fetchDownloads();
-      }, 300);
+      // Fetch fresh data after remove
+      fetchDownloads();
     } catch (error) {
       console.error('Remove failed:', error);
-      setRemovingIds(prev => {
-        const next = new Set(prev);
-        next.delete(id);
-        return next;
-      });
+      fetchDownloads();
     }
-  }, [removeDownload, fetchDownloads, removingIds]);
+  }, [removeDownload, fetchDownloads]);
 
   // Calculate counts
   const activeCount = downloads.filter(d => ['downloading', 'starting', 'queued'].includes(d.status)).length;
@@ -368,25 +315,15 @@ const ProgressPage = () => {
                           className="pause-dl-btn" 
                           onClick={() => handlePause(dl.id)}
                           title="Pause Download"
-                          disabled={pausingIds.has(dl.id)}
                         >
-                          {pausingIds.has(dl.id) ? (
-                            <RefreshCw size={16} className="spin" />
-                          ) : (
-                            <Pause size={16} />
-                          )}
+                          <Pause size={16} />
                         </button>
                         <button 
                           className="cancel-dl-btn" 
                           onClick={() => handleCancel(dl.id)}
                           title="Cancel Download"
-                          disabled={cancellingIds.has(dl.id)}
                         >
-                          {cancellingIds.has(dl.id) ? (
-                            <RefreshCw size={16} className="spin" />
-                          ) : (
-                            <X size={16} />
-                          )}
+                          <X size={16} />
                         </button>
                       </>
                     )}
@@ -395,13 +332,8 @@ const ProgressPage = () => {
                         className="resume-dl-btn" 
                         onClick={() => handleResume(dl.id)}
                         title="Resume Download"
-                        disabled={resumingIds.has(dl.id)}
                       >
-                        {resumingIds.has(dl.id) ? (
-                          <RefreshCw size={16} className="spin" />
-                        ) : (
-                          <Play size={16} />
-                        )}
+                        <Play size={16} />
                       </button>
                     )}
                     {['finished', 'error', 'cancelled'].includes(dl.status) && (
@@ -409,16 +341,9 @@ const ProgressPage = () => {
                         className="remove-dl-btn" 
                         onClick={() => handleRemove(dl.id)}
                         title="Remove from history"
-                        disabled={removingIds.has(dl.id)}
                       >
-                        {removingIds.has(dl.id) ? (
-                          <RefreshCw size={16} className="spin" />
-                        ) : (
-                          <>
-                            <Trash2 size={14} />
-                            <span className="remove-btn-text">Remove</span>
-                          </>
-                        )}
+                        <Trash2 size={14} />
+                        <span className="remove-btn-text">Remove</span>
                       </button>
                     )}
                   </div>

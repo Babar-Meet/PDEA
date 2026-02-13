@@ -8,6 +8,9 @@ class DownloadManager {
     this.downloads = new Map();
     this.processes = new Map();
     this.wsClients = new Set();
+    // Track IDs that have been intentionally terminated (cancelled/paused)
+    // This helps the close handler know the termination was intentional
+    this.terminatedIds = new Set();
   }
 
   /**
@@ -84,10 +87,22 @@ class DownloadManager {
     const download = this.downloads.get(downloadId);
     if (!download) return;
 
-    // Don't update progress if download was cancelled
+    // Don't update progress if download was intentionally terminated
+    // AND the update is NOT setting the status to cancelled/paused
+    // (we want to allow the initial status update)
     const processData = this.processes.get(downloadId);
-    if (processData && processData.cancelled) {
+    if (processData && (processData.cancelled || processData.paused)) {
       return;
+    }
+    
+    // Check the terminatedIds set, but allow if this is setting cancelled/paused status
+    if (this.terminatedIds.has(downloadId)) {
+      // Allow if explicitly setting cancelled or paused status
+      if (updates.status === 'cancelled' || updates.status === 'paused') {
+        // Allow this update - it's the intentional status change
+      } else {
+        return; // Block other updates
+      }
     }
 
     Object.assign(download, updates);
@@ -103,6 +118,13 @@ class DownloadManager {
     return Array.from(this.downloads.values()).sort(
       (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
     );
+  }
+
+  /**
+   * Check if a download was intentionally terminated (cancelled or paused)
+   */
+  isTerminated(downloadId) {
+    return this.terminatedIds.has(downloadId);
   }
 
   /**
@@ -136,11 +158,16 @@ class DownloadManager {
   }
 
   async cancelDownload(downloadId) {
+    // Mark as terminated FIRST to prevent race conditions
+    // This ensures the close handler knows the termination was intentional
+    this.terminatedIds.add(downloadId);
+    
     const processData = this.processes.get(downloadId);
     if (!processData) {
       // Check if download exists but no process running
       const download = this.downloads.get(downloadId);
       if (download) {
+        // Update status FIRST, then clean up
         this.updateProgress(downloadId, {
           status: 'cancelled',
           error: 'Download cancelled by user'
@@ -155,8 +182,18 @@ class DownloadManager {
     const { process, filePath } = processData;
     const pid = process.pid;
     
-    // Immediately remove from processes map so close handler knows it's cancelled
-    this.processes.delete(downloadId);
+    // Update status to 'cancelled' BEFORE killing the process
+    // This ensures the close handler sees the correct status
+    this.updateProgress(downloadId, {
+      status: 'cancelled',
+      error: 'Download cancelled by user',
+      progress: 0,
+      speed: '0',
+      eta: '0'
+    });
+
+    // Remove from paused_downloads.json if it was paused before being cancelled
+    this.removeFromPausedDownloads(downloadId);
 
     // Forcefully kill ONLY this specific process
     if (pid) {
@@ -169,20 +206,11 @@ class DownloadManager {
       }
     }
 
-    // Update status immediately to 'cancelled'
-    this.updateProgress(downloadId, {
-      status: 'cancelled',
-      error: 'Download cancelled by user',
-      progress: 0,
-      speed: '0',
-      eta: '0'
-    });
-
-    // Remove from paused_downloads.json if it was paused before being cancelled
-    this.removeFromPausedDownloads(downloadId);
-
     // Clean up all temporary files including thumbnails
     this.cleanupAllTempFiles(filePath, true);
+
+    // Now remove from processes map (close handler will see it was cancelled)
+    this.processes.delete(downloadId);
 
     console.log(`Download cancelled: ${downloadId}`);
     return true;
@@ -193,15 +221,31 @@ class DownloadManager {
    * Does NOT clean up temp files - they will be used for resume
    */
   async pauseDownload(downloadId) {
+    // Mark as terminated FIRST to prevent race conditions
+    this.terminatedIds.add(downloadId);
+    
     const processData = this.processes.get(downloadId);
     if (!processData) {
       // Check if download exists but no process running
+      // This could be a queued download - check the status
       const download = this.downloads.get(downloadId);
       if (download) {
-        this.updateProgress(downloadId, {
-          status: 'paused',
-          error: 'Download paused by user'
-        });
+        if (download.status === 'queued') {
+          // For queued downloads, we can't pause - treat as cancelled
+          // Remove from any queue handling if needed
+          this.updateProgress(downloadId, {
+            status: 'cancelled',
+            error: 'Queued download cancelled (pause not supported for queued)',
+            progress: 0,
+            speed: '0',
+            eta: '0'
+          });
+        } else {
+          this.updateProgress(downloadId, {
+            status: 'paused',
+            error: 'Download paused by user'
+          });
+        }
       }
       return false;
     }
@@ -212,28 +256,21 @@ class DownloadManager {
     const { process, filePath } = processData;
     const pid = process.pid;
     
-    // Do NOT remove from processes map yet - the close handler needs to check paused flag
-    // We will remove it after setting the paused flag
-
-    // Forcefully kill the process (same as cancel)
-    if (pid) {
-      this.forceKillProcess(pid);
-    } else {
-      try {
-        process.kill('SIGKILL');
-      } catch (e) {
-        // Ignore
-      }
-    }
-
-    // Now remove from processes map after killing
-    this.processes.delete(downloadId);
-
     // Get download info to save
     const download = this.downloads.get(downloadId);
     if (!download) {
+      this.terminatedIds.delete(downloadId);
       return false;
     }
+
+    // Update status to 'paused' BEFORE killing the process
+    // This ensures the close handler sees the correct status
+    this.updateProgress(downloadId, {
+      status: 'paused',
+      error: 'Download paused by user',
+      speed: '0',
+      eta: '0'
+    });
 
     // Save paused download info to JSON file
     const publicDir = path.join(__dirname, '../public');
@@ -256,7 +293,7 @@ class DownloadManager {
     const pausedInfo = {
       downloadId: downloadId,
       url: download.url,
-      format_id: download.format_id,
+      format_id: download.formatId,
       save_dir: download.saveDir,
       title: download.title,
       thumbnail: download.thumbnail,
@@ -276,13 +313,19 @@ class DownloadManager {
       console.error('Failed to save paused download info:', e);
     }
 
-    // Update status to 'paused' - do NOT clean up temp files!
-    this.updateProgress(downloadId, {
-      status: 'paused',
-      error: 'Download paused by user',
-      speed: '0',
-      eta: '0'
-    });
+    // Now kill the process
+    if (pid) {
+      this.forceKillProcess(pid);
+    } else {
+      try {
+        process.kill('SIGKILL');
+      } catch (e) {
+        // Ignore
+      }
+    }
+
+    // Remove from processes map after killing (close handler will see it was paused)
+    this.processes.delete(downloadId);
 
     console.log(`Download paused: ${downloadId}`);
     return true;
@@ -292,6 +335,9 @@ class DownloadManager {
    * Resume a paused download
    */
   async resumeDownload(downloadId) {
+    // Clear the terminated status when resuming
+    this.terminatedIds.delete(downloadId);
+    
     const publicDir = path.join(__dirname, '../public');
     const pausedDownloadsPath = path.join(publicDir, 'paused_downloads.json');
     
@@ -363,6 +409,11 @@ class DownloadManager {
     const activeDownloads = Array.from(this.downloads.values())
       .filter(d => ['downloading', 'starting', 'queued'].includes(d.status));
     
+    // Mark all as terminated first
+    for (const download of activeDownloads) {
+      this.terminatedIds.add(download.id);
+    }
+    
     const results = [];
     for (const download of activeDownloads) {
       results.push(this.pauseDownload(download.id));
@@ -375,6 +426,9 @@ class DownloadManager {
    * Resume all paused downloads
    */
   resumeAllDownloads() {
+    // Clear all terminated IDs for resumed downloads
+    this.terminatedIds.clear();
+    
     const publicDir = path.join(__dirname, '../public');
     const pausedDownloadsPath = path.join(publicDir, 'paused_downloads.json');
     
@@ -395,6 +449,9 @@ class DownloadManager {
     let resumedCount = 0;
 
     for (const pausedInfo of pausedDownloads) {
+      // Clear terminated status for this download
+      this.terminatedIds.delete(pausedInfo.downloadId);
+      
       // Remove from downloads map
       this.downloads.delete(pausedInfo.downloadId);
       
@@ -741,9 +798,16 @@ class DownloadManager {
   }
 
   completeDownload(downloadId, success, error = null) {
+    // Check if this download was intentionally terminated
+    // If so, skip the completion logic - it's already handled
+    if (this.terminatedIds.has(downloadId)) {
+      this.processes.delete(downloadId);
+      return;
+    }
+    
     const processData = this.processes.get(downloadId);
     
-    if (processData && processData.cancelled) {
+    if (processData && (processData.cancelled || processData.paused)) {
       return;
     }
 
