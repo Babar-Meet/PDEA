@@ -152,52 +152,26 @@ const ProgressPage = () => {
   }, [cleanupOrphanedFiles, fetchDownloads, cleaning]);
 
   const handlePauseAll = useCallback(async () => {
-    if (cleaning.has('pauseAll')) return;
-    
-    setCleaning(prev => new Set(prev).add('pauseAll'));
     try {
       await pauseAllDownloads();
-      setCleaning(prev => {
-        const next = new Set(prev);
-        next.delete('pauseAll');
-        return next;
-      });
-      setTimeout(() => {
-        fetchDownloads();
-      }, 300);
+      // Always fetch fresh data after pause all
+      fetchDownloads();
     } catch (error) {
       console.error('Pause all failed:', error);
-      setCleaning(prev => {
-        const next = new Set(prev);
-        next.delete('pauseAll');
-        return next;
-      });
+      fetchDownloads();
     }
-  }, [pauseAllDownloads, fetchDownloads, cleaning]);
+  }, [pauseAllDownloads, fetchDownloads]);
 
   const handleResumeAll = useCallback(async () => {
-    if (cleaning.has('resumeAll')) return;
-    
-    setCleaning(prev => new Set(prev).add('resumeAll'));
     try {
       await resumeAllDownloads();
-      setCleaning(prev => {
-        const next = new Set(prev);
-        next.delete('resumeAll');
-        return next;
-      });
-      setTimeout(() => {
-        fetchDownloads();
-      }, 300);
+      // Always fetch fresh data after resume all
+      fetchDownloads();
     } catch (error) {
       console.error('Resume all failed:', error);
-      setCleaning(prev => {
-        const next = new Set(prev);
-        next.delete('resumeAll');
-        return next;
-      });
+      fetchDownloads();
     }
-  }, [resumeAllDownloads, fetchDownloads, cleaning]);
+  }, [resumeAllDownloads, fetchDownloads]);
 
   const handleRemove = useCallback(async (id) => {
     // Allow remove - just do it
@@ -231,20 +205,18 @@ const ProgressPage = () => {
               <button 
                 className="resume-all-btn" 
                 onClick={handleResumeAll}
-                disabled={cleaning.has('resumeAll')}
                 title="Resume all paused downloads"
               >
-                <Play size={16} /> {cleaning.has('resumeAll') ? 'Resuming...' : `Resume All (${pausedCount})`}
+                <Play size={16} /> Resume All ({pausedCount})
               </button>
            )}
            {activeCount > 0 && (
               <button 
                 className="pause-all-btn" 
                 onClick={handlePauseAll}
-                disabled={cleaning.has('pauseAll')}
                 title="Pause all active downloads"
               >
-                <Pause size={16} /> {cleaning.has('pauseAll') ? 'Pausing...' : 'Pause All'}
+                <Pause size={16} /> Pause All
               </button>
            )}
            <button 
