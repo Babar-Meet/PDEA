@@ -654,11 +654,15 @@ class DownloadManager {
               const videoTitleLower = videoTitle.toLowerCase();
               const fileLower = fileWithoutExt.toLowerCase();
               
-              // Match if: exact title, title in filename, filename in title, or partial match
-              const isMatch = 
+              // Match if: exact title, title in filename (ignoring format suffixes), or filename in title
+              // Handle cases where video file has format info like .f136 but thumbnail doesn't
+              const isMatch =
                 fileLower === videoTitleLower ||
                 fileLower.includes(videoTitleLower) ||
                 videoTitleLower.includes(fileLower) ||
+                // Check if video title matches filename without format suffix
+                (videoTitleLower.includes(fileLower.split('.f')[0])) ||
+                (fileLower.includes(videoTitleLower.split('.f')[0])) ||
                 // Also check for partial word matches (3+ char words)
                 (videoTitleLower.split(' ').filter(w => w.length > 3).some(word => 
                   fileLower.includes(word)
