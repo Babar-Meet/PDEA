@@ -1,6 +1,6 @@
 @echo off
 echo ==============================================
-echo YT Local Desktop - Desktop Application
+echo PDEA - Desktop Application
 echo ==============================================
 echo.
 

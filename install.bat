@@ -1,6 +1,6 @@
 @echo off
 echo ==============================================
-echo YT Local Desktop - Installation Script
+echo PDEA - Installation Script
 echo ==============================================
 echo.
 

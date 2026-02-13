@@ -1,6 +1,6 @@
 @echo off
 echo ==============================================
-echo YT Local Desktop - Browser Version
+echo PDEA - Browser Version
 echo ==============================================
 echo.
 

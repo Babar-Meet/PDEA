@@ -15,7 +15,7 @@ function createWindow() {
       webSecurity: false // Allow local resources
     },
     autoHideMenuBar: true,
-    title: "YT Local Desktop"
+    title: "PDEA"
   });
 
   // Load the app
