@@ -147,14 +147,14 @@ async function checkForNewVideos(subscription, customDate = null) {
   
   try {
     const checkDate = customDate || last_checked;
-    // Use a slightly older date (2 days ago) for yt-dlp filtering to avoid missing 
-    // videos near date boundaries, then use precise timestamps for exact filtering.
+    // Use a small buffer (2 hours) for yt-dlp filtering to avoid missing 
+    // videos near time boundaries, then use precise timestamps for exact filtering.
     let checkDateObj = new Date(checkDate);
     if (isNaN(checkDateObj.getTime())) {
       checkDateObj = new Date(); // Fallback to now if stored date is corrupt
     }
-    const twoDaysAgo = new Date(checkDateObj.getTime() - (2 * 24 * 60 * 60 * 1000));
-    const dateAfter = twoDaysAgo.toISOString().split('T')[0].replace(/-/g, '');
+    const twoHoursAgo = new Date(checkDateObj.getTime() - (2 * 60 * 60 * 1000));
+    const dateAfter = twoHoursAgo.toISOString().split('T')[0].replace(/-/g, '');
     
     // Use local yt-dlp.exe if available, otherwise fall back to system yt-dlp
     const ytDlp = fs.existsSync(YT_DLP_PATH) ? YT_DLP_PATH : 'yt-dlp';
