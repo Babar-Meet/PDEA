@@ -15,6 +15,7 @@ import {
   DollarSign,
   X,
   Download,
+  Video,
   Music,
   Play,
   Pause,
@@ -31,7 +32,7 @@ const Header = ({ toggleSidebar }) => {
   const [isSearching, setIsSearching] = useState(false);
 
   const navigate = useNavigate();
-  const { downloads } = useDownload();
+  const { downloads, pendingVideosCount } = useDownload();
   const { activeSounds, playAll, stopAll } = useAmbience();
   const aboutRef = useRef(null);
   const socialsRef = useRef(null);
@@ -458,6 +459,18 @@ const Header = ({ toggleSidebar }) => {
       </div>
 
       <div className="header__right">
+        {/* New Videos Indicator */}
+        {pendingVideosCount > 0 && (
+          <div 
+            className="header__new-videos-indicator" 
+            onClick={() => navigate('/download/new-videos')}
+            title={`${pendingVideosCount} new video${pendingVideosCount > 1 ? 's' : ''} available`}
+          >
+            <Video size={20} />
+            <span className="new-videos-count">{pendingVideosCount}</span>
+          </div>
+        )}
+
         {/* Download Indicator */}
         {activeDownloads.length > 0 && (
           <div 

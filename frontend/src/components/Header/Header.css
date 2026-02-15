@@ -435,8 +435,8 @@
   border: 1px solid #303030;
 }
 
-/* Download Indicator */
-.header__download-indicator {
+.header__download-indicator,
+.header__new-videos-indicator {
   position: relative;
   background-color: rgba(255, 255, 255, 0.1);
   border: none;
@@ -454,13 +454,18 @@
   font-weight: 500;
 }
 
-.header__download-indicator:hover {
+.header__download-indicator:hover,
+.header__new-videos-indicator:hover {
   background-color: #272727;
   transform: scale(1.03);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
+.header__new-videos-indicator {
+  border: 1px solid rgba(28, 98, 185, 0.3);
+}
 
+.new-videos-count,
 .download-count {
   min-width: 18px;
   text-align: center;

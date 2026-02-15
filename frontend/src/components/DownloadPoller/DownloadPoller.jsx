@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchDownloads, fetchSettings, updateDownloadProgress } from '../../store/slices/downloadSlice';
+import { fetchDownloads, fetchSettings, updateDownloadProgress, fetchPendingVideosCount } from '../../store/slices/downloadSlice';
 import { API_BASE_URL } from '../../config';
 
 const DownloadPoller = () => {
@@ -42,6 +42,10 @@ const DownloadPoller = () => {
               filename: data.filename,
               error: data.error
             }));
+          }
+          
+          if (data.type === 'pending_videos_updated') {
+            dispatch(fetchPendingVideosCount());
           }
         } catch (error) {
           console.error('Failed to parse WebSocket message:', error);
@@ -88,6 +92,7 @@ const DownloadPoller = () => {
   useEffect(() => {
     dispatch(fetchDownloads());
     dispatch(fetchSettings());
+    dispatch(fetchPendingVideosCount());
 
     const safetyInterval = setInterval(() => {
       dispatch(fetchDownloads());

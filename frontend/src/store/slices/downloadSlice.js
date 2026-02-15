@@ -47,6 +47,19 @@ export const updateSettings = createAsyncThunk(
   }
 );
 
+export const fetchPendingVideosCount = createAsyncThunk(
+  'download/fetchPendingVideosCount',
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/subscriptions/pending-videos`);
+      const pendingVideos = await res.json();
+      return pendingVideos.length;
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
 export const startDownload = createAsyncThunk(
   'download/startDownload',
   async ({ url, format_id, save_dir, metadata = {} }, { dispatch, rejectWithValue }) => {
@@ -276,6 +289,7 @@ const initialState = {
   cleanupMessage: null,
   pausedCount: 0,
   pausedDownloads: [],
+  pendingVideosCount: 0,
 };
 
 const downloadSlice = createSlice({
@@ -333,6 +347,9 @@ const downloadSlice = createSlice({
       .addCase(fetchPausedDownloads.fulfilled, (state, action) => {
         state.pausedDownloads = action.payload;
         state.pausedCount = action.payload.length;
+      })
+      .addCase(fetchPendingVideosCount.fulfilled, (state, action) => {
+        state.pendingVideosCount = action.payload;
       });
   },
 });

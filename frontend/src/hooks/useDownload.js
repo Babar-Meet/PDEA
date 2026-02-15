@@ -30,6 +30,7 @@ export const useDownload = () => {
   const cleanupMessage = useSelector((state) => state.download.cleanupMessage);
   const pausedCount = useSelector((state) => state.download.pausedCount);
   const pausedDownloads = useSelector((state) => state.download.pausedDownloads);
+  const pendingVideosCount = useSelector((state) => state.download.pendingVideosCount);
 
   const startDirectDownload = async (payload) => {
     try {
@@ -176,12 +177,13 @@ export const useDownload = () => {
     removeDownload,
 
 
-    simpleVideoData,
     directVideoData,
-    cleanupMessage,
+    cleanupMessage: cleanupMessage,
+    pendingVideosCount,
     setSimpleVideoData: (data) => dispatch(setSimpleVideoDataAction(data)),
     setDirectVideoData: (data) => dispatch(setDirectVideoDataAction(data)),
     clearVideoData: () => dispatch(clearVideoDataAction()),
     clearCleanupMessage: () => dispatch(clearCleanupMessageAction()),
+    fetchPendingVideosCount: () => dispatch(fetchPendingVideosCountThunk()),
   };
 };
