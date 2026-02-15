@@ -256,43 +256,54 @@ const Subscriptions = () => {
 
   const handleCheckFromCustomDate = async (e) => {
     e.preventDefault();
-    if (!selectedSubscription) return;
+    console.log('[Subscriptions] Checking from custom date:', { selectedSubscription, dateDay, dateMonth, dateYear });
+    
+    if (!selectedSubscription) {
+      console.error('[Subscriptions] No subscription selected for custom check');
+      setSelectedSubscription('all'); // Fallback to all if somehow null
+    }
 
     const formattedDate = validateDate();
     if (!formattedDate) {
+      console.warn('[Subscriptions] Date validation failed');
       return; // Validation failed
     }
 
     try {
       if (selectedSubscription === 'all') {
-        // Check all subscriptions from custom date
+        console.log('[Subscriptions] Checking ALL subscriptions from', formattedDate);
         await handleCheckAllNow(formattedDate);
       } else {
-        // Check single subscription from custom date
+        console.log(`[Subscriptions] Checking ${selectedSubscription} from`, formattedDate);
         const response = await fetch(`${API_BASE_URL}/api/subscriptions/${encodeURIComponent(selectedSubscription)}/check?customDate=${formattedDate}`);
         const newVideos = await response.json();
         
         if (newVideos.length > 0) {
           alert(`Found ${newVideos.length} new videos from ${dateDay}/${dateMonth}/${dateYear}`);
+          // If auto-download is enabled, maybe we should redirect?
+          const sub = subscriptions.find(s => s.channelName === selectedSubscription);
+          if (sub && sub.auto_download) {
+            navigate('/download/progress');
+          }
         } else {
           alert(`No new videos found from ${dateDay}/${dateMonth}/${dateYear}`);
         }
       }
       
       setShowCustomDateModal(false);
-      // Reset fields
+      // Reset fields but keep year for convenience
       setDateDay('');
       setDateMonth('');
-      setDateYear('');
       setDateError('');
       setSelectedSubscription(null);
     } catch (error) {
-      console.error('Error checking for new videos:', error);
-      alert('Failed to check for new videos');
+      console.error('[Subscriptions] Error checking for new videos:', error);
+      alert('Failed to check for new videos. Please check your connection.');
     }
   };
 
   const handleCheckAllNow = async (customDate = null) => {
+    console.log('[Subscriptions] handleCheckAllNow cold launch:', { customDate });
     setCheckingAll(true);
     try {
       let url = `${API_BASE_URL}/api/subscriptions/check-all`;

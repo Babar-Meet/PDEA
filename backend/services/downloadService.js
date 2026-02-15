@@ -694,8 +694,13 @@ class DownloadService {
       downloadManager.updateProgress(downloadId, { status: 'starting' });
       this.startProcess(downloadId, args, outputTemplate, true);
       // Notify subscription service about new batch download
-      if (typeof subscriptionService.incrementActiveDownloads === 'function') {
-        subscriptionService.incrementActiveDownloads();
+      try {
+        const subService = require('./subscriptionService');
+        if (typeof subService.incrementActiveDownloads === 'function') {
+          subService.incrementActiveDownloads();
+        }
+      } catch (e) {
+        // Ignore
       }
     }
   }
@@ -753,8 +758,13 @@ class DownloadService {
       if (downloadManager.isTerminated(downloadId)) {
         // This was intentionally terminated, don't update status
         // Notify subscription service about cancelled/paused download
-        if (typeof subscriptionService.decrementActiveDownloads === 'function') {
-          subscriptionService.decrementActiveDownloads();
+        try {
+          const subService = require('./subscriptionService');
+          if (typeof subService.decrementActiveDownloads === 'function') {
+            subService.decrementActiveDownloads();
+          }
+        } catch (e) {
+          // Ignore
         }
         
         if (isBatch) {
