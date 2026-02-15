@@ -326,7 +326,7 @@ const Header = ({ toggleSidebar }) => {
           <div className="logo">
             <img src="/YT_Logo.svg" alt="YouTube Logo" className="logo__icon" />
           </div>
-          <h1 className="logo__text">Dr . YouTube</h1>
+          <h1 className="logo__text">Dr . PDEA</h1>
         </a>
       </div>
 

@@ -12,10 +12,7 @@ const DownloadHeader = () => {
         <div className="disclaimer-text">
           <h1>Disclaimer</h1>
           <p>
-            This is a basic college student project created for educational purposes only.
-            We do not support or promote downloading YouTube videos.
-            Please ensure you have proper rights or permission from the original content creator
-            before downloading or using any video.
+            This software was originally developed as a college student project for educational and research purposes. We do not support or promote unauthorized downloading of copyrighted content from YouTube or any other platform. Users are solely responsible for ensuring they have proper rights, licenses, or permission from the original content owner before downloading, using, or distributing any media through this application.
           </p>
         </div>
       </div>
