@@ -190,7 +190,7 @@ async function checkForNewVideos(subscription, customDate = null, includeShorts 
     const args = [
       channel_url,
       '--dateafter', dateAfter,
-      '--flat-playlist',
+      '--playlist-end', '12',
       '--extractor-args', 'youtubetab:approximate_date',  // CRITICAL: Forces upload_date in flat mode
       '--print', `%(id)s${delimiter}%(title)s${delimiter}%(upload_date)s${delimiter}%(thumbnail)s${delimiter}%(timestamp)s${delimiter}%(duration)s${delimiter}%(is_live)s`
     ];
