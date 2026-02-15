@@ -168,6 +168,7 @@ async function checkForNewVideos(subscription, customDate = null) {
       channel_url,
       '--dateafter', dateAfter,
       '--flat-playlist',
+      '--extractor-args', 'youtubetab:approximate_date',  // CRITICAL: Forces upload_date in flat mode
       '--print', `%(id)s${delimiter}%(title)s${delimiter}%(upload_date)s${delimiter}%(thumbnail)s${delimiter}%(timestamp)s`,
       '--js-runtimes', 'node'
     ];
@@ -206,6 +207,12 @@ async function checkForNewVideos(subscription, customDate = null) {
         }
         
         const lastCheckedTime = new Date(checkDate).getTime();
+        const lastCheckedDate = new Date(lastCheckedTime);
+        const lastCheckedUTCMidnight = Date.UTC(
+          lastCheckedDate.getUTCFullYear(),
+          lastCheckedDate.getUTCMonth(),
+          lastCheckedDate.getUTCDate()
+        );
         
         // Parse output
         const videos = [];
@@ -217,16 +224,36 @@ async function checkForNewVideos(subscription, customDate = null) {
           
           const [id, title, uploadDate, thumbnail, timestamp] = parts;
           
-          // Precise timestamp filtering if available
-          if (timestamp && timestamp !== 'NA' && !isNaN(timestamp)) {
+          // Determine if this video is new
+          let isNew = true;
+          
+          // 1. Try using timestamp (most precise) - now may actually have data with the extractor arg
+          if (timestamp && timestamp !== 'NA' && timestamp !== 'null' && !isNaN(timestamp)) {
             const videoTime = parseInt(timestamp) * 1000;
             if (videoTime <= lastCheckedTime) {
-              continue; // Skip already seen videos
+              isNew = false;
             }
           }
+          // 2. Fallback to upload_date (now populated by approximate_date extractor arg)
+          else if (uploadDate && uploadDate !== 'NA' && /^\d{8}$/.test(uploadDate)) {
+            // Convert YYYYMMDD to UTC midnight
+            const year = parseInt(uploadDate.substring(0, 4));
+            const month = parseInt(uploadDate.substring(4, 6)) - 1;
+            const day = parseInt(uploadDate.substring(6, 8));
+            const videoDate = Date.UTC(year, month, day);
+            
+            if (videoDate <= lastCheckedUTCMidnight) {
+              isNew = false;
+            }
+          }
+          // 3. If still no usable date info (rare with extractor arg), include but warn
+          else {
+            console.warn(`Video ${id} has no valid date information – including by default`);
+            // Still include it to be safe
+          }
           
-          if (id && title) {
-            // Process thumbnail URL - Ensure it's a valid string
+          if (isNew) {
+            // Process thumbnail URL
             let processedThumbnail = thumbnail && thumbnail !== 'NA' ? thumbnail : null;
             
             // If thumbnail is missing, construct a fallback YouTube thumbnail URL
@@ -234,18 +261,18 @@ async function checkForNewVideos(subscription, customDate = null) {
               processedThumbnail = `https://i.ytimg.com/vi/${id}/mqdefault.jpg`;
             }
             
-            // Validate and process upload date to YYYY-MM-DD for frontend compatibility
+            // Process upload date to YYYY-MM-DD
             let processedUploadDate = null;
             if (uploadDate && uploadDate !== 'NA') {
               const trimmedDate = uploadDate.trim();
-              if (/^\d{8}$/.test(trimmedDate)) { // YYYYMMDD
+              if (/^\d{8}$/.test(trimmedDate)) {
                 processedUploadDate = `${trimmedDate.substring(0, 4)}-${trimmedDate.substring(4, 6)}-${trimmedDate.substring(6, 8)}`;
               } else if (/^\d{4}-\d{2}-\d{2}$/.test(trimmedDate)) {
                 processedUploadDate = trimmedDate;
               }
             }
             
-            // Fallback to current date if missing so it doesn't break UI
+            // Fallback to current date if missing
             if (!processedUploadDate) {
               processedUploadDate = new Date().toISOString().split('T')[0];
             }

@@ -450,7 +450,7 @@ const Subscriptions = () => {
             <h2>Check Videos From Date</h2>
             <form onSubmit={handleCheckFromCustomDate}>
               <div className="form-group">
-                <label htmlFor="customDate">Select Date:</label>
+                <label htmlFor="customDate">Select Date (DD/MM/YYYY):</label>
                 <input
                   id="customDate"
                   type="date"
@@ -459,6 +459,9 @@ const Subscriptions = () => {
                   max={new Date().toISOString().split('T')[0]}
                   required
                 />
+                <p className="date-format-hint" style={{ fontSize: '0.85rem', color: '#666', marginTop: '4px' }}>
+                  Please enter date in DD/MM/YYYY format (e.g., 15/02/2026)
+                </p>
               </div>
               
               <div className="form-actions">
