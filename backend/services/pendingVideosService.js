@@ -1,7 +1,21 @@
 const fs = require('fs');
 const path = require('path');
+const downloadManager = require('./DownloadManager');
 
 const SUBSCRIPTIONS_DIR = path.join(__dirname, '../public/Subscriptions');
+
+// Helper to notify clients about updates
+const notifyUpdate = (channelName, type = 'pending_videos_updated') => {
+  try {
+    downloadManager.broadcast({
+      type,
+      channelName,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.warn('[PendingVideosService] Could not broadcast update:', error.message);
+  }
+};
 
 // Get pending videos file path for a channel
 const getPendingVideosPath = (channelName) => {
@@ -62,6 +76,7 @@ const addPendingVideo = (channelName, video) => {
     if (!videoExists) {
       existing.push(video);
       fs.writeFileSync(pendingPath, JSON.stringify(existing, null, 2));
+      notifyUpdate(channelName);
     }
     
     return existing;
@@ -79,6 +94,7 @@ const removePendingVideo = (channelName, videoId) => {
     
     const updated = existing.filter(v => v.id !== videoId);
     fs.writeFileSync(pendingPath, JSON.stringify(updated, null, 2));
+    notifyUpdate(channelName);
     
     return updated;
   } catch (error) {
@@ -94,6 +110,7 @@ const clearPendingVideos = (channelName) => {
     
     if (fs.existsSync(pendingPath)) {
       fs.writeFileSync(pendingPath, JSON.stringify([], null, 2));
+      notifyUpdate(channelName);
     }
     
     return [];
@@ -122,6 +139,7 @@ const saveCustomDateVideos = (channelName, videos, customDate) => {
     
     merged.push(...videosToAdd);
     fs.writeFileSync(pendingPath, JSON.stringify(merged, null, 2));
+    notifyUpdate(channelName);
     
     return merged;
   } catch (error) {
@@ -143,6 +161,7 @@ const updatePendingVideoStatus = (channelName, videoId, status) => {
     );
     
     fs.writeFileSync(pendingPath, JSON.stringify(updated, null, 2));
+    notifyUpdate(channelName);
     
     return updated;
   } catch (error) {
@@ -160,3 +179,4 @@ module.exports = {
   saveCustomDateVideos,
   updatePendingVideoStatus
 };
+

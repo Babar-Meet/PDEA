@@ -376,11 +376,9 @@ async function downloadVideo(video, subscription) {
     });
     
     // Mark as queued/downloading in pending service
-    pendingVideosService.updatePendingVideoStatus(channelName, id, 'downloaded'); // Mark as "processed"
-    
-    // Remove from pending videos so it disappears from "New Videos" UI 
-    // since it's now in the "Queue & History" progress section
-    pendingVideosService.removePendingVideo(channelName, id);
+    // We no longer remove it immediately so it stays visible in "New Videos" 
+    // but the UI can show its downloading status
+    pendingVideosService.updatePendingVideoStatus(channelName, id, 'downloading');
     
     // Update last_checked to current time as a marker of activity
     await updateSubscription(channelName, {
@@ -511,110 +509,99 @@ async function retryFailedDownloads(subscriptions) {
 }
 
 // Start periodic check for new videos
-let checkInterval;
+let checkTimeout;
 
 function startPeriodicCheck(intervalMinutes = 10) {
   const intervalMs = intervalMinutes * 60 * 1000;
   
   console.log(`[Subscription Service] Periodic check enabled. Interval: ${intervalMinutes} minutes`);
   
-  // Run initial check after a small delay to not block startup too much
-  setTimeout(() => runCheck(), 5000);
+  // Initial check after delay
+  checkTimeout = setTimeout(() => runCheck(), 5000);
   
   async function runCheck() {
-    const now = Date.now();
-    
-    // Skip if too soon since last check
-    if (now - lastCheckTime < MIN_CHECK_INTERVAL) {
-      console.log(`[Subscription Service] Skipping check - too soon since last check`);
-      return;
-    }
-    
-    lastCheckTime = now;
-    console.log(`[Subscription Service] Running periodic background check at ${new Date().toLocaleTimeString()}...`);
-    
-    const subscriptions = await loadSubscriptions();
-    
-    for (const subscription of subscriptions) {
-      if (subscription.auto_download) {
+    try {
+      const now = Date.now();
+      
+      // Skip if explicitly too soon since last check logic
+      if (now - lastCheckTime < MIN_CHECK_INTERVAL) {
+        return;
+      }
+      
+      lastCheckTime = now;
+      console.log(`[Subscription Service] Running periodic background check at ${new Date().toLocaleTimeString()}...`);
+      
+      const subscriptions = await loadSubscriptions();
+      
+      for (const subscription of subscriptions) {
         try {
-          // 1. Check for NEW videos
+          // 1. Check for NEW videos (for ALL creators)
           const newVideos = await checkForNewVideos(subscription);
           
-          // 2. Wait a bit between checks to avoid overwhelming system
+          // Wait a bit between checks to avoid rate limiting
           await new Promise(resolve => setTimeout(resolve, 2000));
           
           if (newVideos.length > 0) {
             console.log(`[Subscription Service] Found ${newVideos.length} new videos for ${subscription.channelName}`);
             
-            // Queue downloads for newly found videos (only if no active downloads)
-            for (const video of newVideos) {
-              if (activeDownloadCount >= 3) {
-                console.log(`[Subscription Service] Too many active downloads, queuing for later`);
-                break;
+            // 2. Automate download ONLY if auto_download is enabled
+            if (subscription.auto_download) {
+              for (const video of newVideos) {
+                if (activeDownloadCount >= 3) {
+                  console.log(`[Subscription Service] Too many active downloads, skipping auto-download for: ${video.title}`);
+                  continue; 
+                }
+                
+                console.log(`[Subscription Service] Auto-downloading: ${video.title}`);
+                await downloadVideo(video, subscription);
+                
+                // Wait between starting downloads
+                await new Promise(resolve => setTimeout(resolve, 3000));
               }
-              
-              console.log(`[Subscription Service] Queuing video: ${video.title}`);
-              await downloadVideo(video, subscription);
-              
-              // Wait between queueing downloads
-              await new Promise(resolve => setTimeout(resolve, 3000));
             }
           }
 
-          // 3. RETRY items from the pending list that were previously found but not downloaded
-          // only if auto_download is enabled and not too many active downloads
-          const pendingVideos = pendingVideosService.loadPendingVideos(subscription.channelName);
-          const videosToRetry = pendingVideos.filter(v => v.status === 'error' || !v.status);
-          
-          if (videosToRetry.length > 0 && activeDownloadCount < 2) {
-            console.log(`[Subscription Service] Retrying ${videosToRetry.length} pending/failed videos for ${subscription.channelName}`);
-            for (const video of videosToRetry) {
-              if (activeDownloadCount >= 3) {
-                console.log(`[Subscription Service] Too many active downloads, stopping retries`);
-                break;
+          // 3. RETRY logic for auto_download subscriptions
+          if (subscription.auto_download) {
+            const pendingVideos = pendingVideosService.loadPendingVideos(subscription.channelName);
+            const videosToRetry = pendingVideos.filter(v => v.status === 'error' || !v.status);
+            
+            if (videosToRetry.length > 0 && activeDownloadCount < 2) {
+              for (const video of videosToRetry) {
+                if (activeDownloadCount >= 3) break;
+                
+                try {
+                  const fullVideo = { ...video, channel_name: subscription.channelName };
+                  await downloadVideo(fullVideo, subscription);
+                } catch (e) {}
+                await new Promise(resolve => setTimeout(resolve, 2000));
               }
-              
-              try {
-                // Ensure we have correct metadata
-                const fullVideo = { ...video, channel_name: subscription.channelName };
-                await downloadVideo(fullVideo, subscription);
-              } catch (retryError) {
-                // Individual video error handled inside downloadVideo
-              }
-              
-              // Wait between retries
-              await new Promise(resolve => setTimeout(resolve, 2000));
             }
           }
           
         } catch (error) {
           console.error(`Error in periodic check for ${subscription.channelName}:`, error);
-          
           await updateSubscription(subscription.channelName, {
             retry_count: (subscription.retry_count || 0) + 1,
             last_error: error.message
           });
-          
-          if ((subscription.retry_count || 0) + 1 >= 5) {
-            console.log(`[Subscription Service] Max retries reached for ${subscription.channelName}. Disabling auto-download.`);
-            await updateSubscription(subscription.channelName, {
-              auto_download: false
-            });
-          }
         }
       }
+      console.log(`[Subscription Service] Background check cycle completed.`);
+    } catch (e) {
+      console.error(`[Subscription Service] Fatal error in runCheck:`, e);
+    } finally {
+      // Schedule NEXT check always after finishing current one
+      checkTimeout = setTimeout(() => runCheck(), intervalMs);
     }
-    console.log(`[Subscription Service] Background check cycle completed.`);
   }
-
-  checkInterval = setInterval(runCheck, intervalMs);
 }
 
 function stopPeriodicCheck() {
-  if (checkInterval) {
-    clearInterval(checkInterval);
-    checkInterval = null;
+  if (checkTimeout) {
+    clearTimeout(checkTimeout);
+    checkTimeout = null;
+    console.log('[Subscription Service] Periodic check disabled');
   }
 }
 

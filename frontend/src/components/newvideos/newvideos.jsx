@@ -10,6 +10,47 @@ const NewVideos = () => {
 
   useEffect(() => {
     loadNewVideos();
+
+    // Set up WebSocket connection for real-time updates
+    const wsUrl = API_BASE_URL.replace(/^http/, 'ws') + '/ws/downloads';
+    let socket;
+
+    const connectWebSocket = () => {
+      socket = new WebSocket(wsUrl);
+
+      socket.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          
+          // Refresh list if pending videos were updated
+          if (data.type === 'pending_videos_updated') {
+            console.log('[NewVideos] Received update notification, refreshing...', data);
+            loadNewVideos();
+          }
+          
+          // Also listen for download progress to update local "downloading" status
+          if (data.type === 'progress') {
+             // If a video finishes, we might want to refresh to see if it's removed
+             if (data.status === 'completed' || data.status === 'error') {
+               loadNewVideos();
+             }
+          }
+        } catch (error) {
+          console.error('[NewVideos] WebSocket message error:', error);
+        }
+      };
+
+      socket.onclose = () => {
+        console.log('[NewVideos] WebSocket closed, retrying in 5s...');
+        setTimeout(connectWebSocket, 5000);
+      };
+    };
+
+    connectWebSocket();
+
+    return () => {
+      if (socket) socket.close();
+    };
   }, []);
 
   const loadNewVideos = async () => {
@@ -18,7 +59,12 @@ const NewVideos = () => {
       const pendingResponse = await fetch(`${API_BASE_URL}/api/subscriptions/pending-videos`);
       const pendingVideos = await pendingResponse.json();
       
-      setNewVideos(pendingVideos);
+      // Sort by upload date DESC
+      const sorted = [...pendingVideos].sort((a, b) => {
+        return new Date(b.upload_date) - new Date(a.upload_date);
+      });
+      
+      setNewVideos(sorted);
     } catch (error) {
       console.error('Error loading new videos:', error);
     } finally {
@@ -49,13 +95,14 @@ const NewVideos = () => {
         body: JSON.stringify(video),
       });
 
-      if (response.ok) {
-        // Remove from new videos list
-        setNewVideos(newVideos.filter(v => v.id !== video.id));
-      } else {
+      if (!response.ok) {
         const errorData = await response.json();
         alert(`Error downloading video: ${errorData.error}`);
       }
+      
+      // We don't remove from list here anymore, 
+      // the websocket update or the mark-as-downloading will handle it
+      loadNewVideos();
     } catch (error) {
       console.error('Error downloading video:', error);
       alert('Failed to download video');
@@ -79,7 +126,6 @@ const NewVideos = () => {
       if (!channelName) {
         const subscriptionsResponse = await fetch(`${API_BASE_URL}/api/subscriptions`);
         const subscriptions = await subscriptionsResponse.json();
-        // This is a fallback - ideally we should store channel name with video
         const subscription = subscriptions[0];
         channelName = subscription?.channelName || 'Unknown';
       }
@@ -93,8 +139,8 @@ const NewVideos = () => {
       });
 
       if (response.ok) {
-        // Remove from new videos list
-        setNewVideos(newVideos.filter(v => v.id !== video.id));
+        // Refresh list
+        loadNewVideos();
       } else {
         const errorData = await response.json();
         alert(`Error canceling video: ${errorData.error}`);
@@ -103,7 +149,6 @@ const NewVideos = () => {
       console.error('Error canceling video:', error);
       alert('Failed to cancel video');
     } finally {
-      // Remove from downloading set
       setDownloadingVideos(prev => {
         const newSet = new Set(prev);
         newSet.delete(video.id);
@@ -173,47 +218,56 @@ const NewVideos = () => {
         </div>
       ) : (
         <div className="new-videos-grid">
-          {newVideos.map((video) => (
-            <div key={video.id} className="new-video-card">
-              {video.thumbnail && (
-                <div className="video-thumbnail">
-                  <img src={video.thumbnail} alt={video.title} />
+          {newVideos.map((video) => {
+            const isAutoDownloading = video.status === 'downloading';
+            const isLocalDownloading = downloadingVideos.has(video.id);
+            const isProcessing = isAutoDownloading || isLocalDownloading;
+
+            return (
+              <div key={video.id} className={`new-video-card ${isAutoDownloading ? 'auto-downloading' : ''}`}>
+                {video.thumbnail && (
+                  <div className="video-thumbnail">
+                    <img src={video.thumbnail} alt={video.title} />
+                    {isAutoDownloading && (
+                      <div className="auto-download-badge">Auto-Queued</div>
+                    )}
+                  </div>
+                )}
+                
+                <div className="video-info">
+                  <h3 className="video-title">{video.title}</h3>
+                  <p className="channel-name">{video.channel_name}</p>
+                  <p className="upload-date">
+                    {formatDate(video.upload_date)}
+                  </p>
                 </div>
-              )}
-              
-              <div className="video-info">
-                <h3 className="video-title">{video.title}</h3>
-                <p className="channel-name">{video.channel_name}</p>
-                <p className="upload-date">
-                  {formatDate(video.upload_date)}
-                </p>
+                
+                <div className="video-actions">
+                  <button 
+                    className="download-button"
+                    onClick={() => handleDownload(video)}
+                    disabled={isProcessing}
+                  >
+                    {isProcessing ? (
+                      <span className="downloading">
+                        <span className="spinner"></span>
+                        {isAutoDownloading ? 'Queued...' : 'Downloading...'}
+                      </span>
+                    ) : (
+                      'Download'
+                    )}
+                  </button>
+                  <button 
+                    className="cancel-button"
+                    onClick={() => handleCancel(video)}
+                    disabled={isLocalDownloading}
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
-              
-              <div className="video-actions">
-                <button 
-                  className="download-button"
-                  onClick={() => handleDownload(video)}
-                  disabled={downloadingVideos.has(video.id)}
-                >
-                  {downloadingVideos.has(video.id) ? (
-                    <span className="downloading">
-                      <span className="spinner"></span>
-                      Downloading...
-                    </span>
-                  ) : (
-                    'Download'
-                  )}
-                </button>
-                <button 
-                  className="cancel-button"
-                  onClick={() => handleCancel(video)}
-                  disabled={downloadingVideos.has(video.id)}
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
