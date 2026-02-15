@@ -76,6 +76,7 @@ const Subscriptions = () => {
           
           // Clear status after completion or error
           if (status === 'complete' || status === 'error') {
+            loadSubscriptions(); // Refresh to show new last_checked
             setTimeout(() => {
               setCheckStatus(prev => {
                 const newStatus = { ...prev };
@@ -215,6 +216,7 @@ const Subscriptions = () => {
       } else {
         alert(`No new videos found for ${channelName}`);
       }
+      loadSubscriptions(); // Refresh to show new last_checked
     } catch (error) {
       console.error('Error checking for new videos:', error);
       alert('Failed to check for new videos');
@@ -292,6 +294,7 @@ const Subscriptions = () => {
         }
       }
       
+      loadSubscriptions(); // Refresh all to show new last_checked
       setShowCustomDateModal(false);
       // Reset fields but keep year for convenience
       setDateDay('');

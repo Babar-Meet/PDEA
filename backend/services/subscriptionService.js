@@ -159,8 +159,12 @@ async function checkForNewVideos(subscription, customDate = null, includeShorts 
     if (isNaN(checkDateObj.getTime())) {
       checkDateObj = new Date(); // Fallback to now if stored date is corrupt
     }
-    const twoHoursAgo = new Date(checkDateObj.getTime() - (2 * 60 * 60 * 1000));
-    const dateAfter = twoHoursAgo.toISOString().split('T')[0].replace(/-/g, '');
+    
+    // Calculate YYYYMMDD in user's local timezone
+    const year = checkDateObj.getFullYear();
+    const month = String(checkDateObj.getMonth() + 1).padStart(2, '0');
+    const day = String(checkDateObj.getDate()).padStart(2, '0');
+    const dateAfter = `${year}${month}${day}`;
     
     // Use local yt-dlp.exe if available, otherwise fall back to system yt-dlp
     const ytDlp = fs.existsSync(YT_DLP_PATH) ? YT_DLP_PATH : 'yt-dlp';
@@ -225,7 +229,7 @@ async function checkForNewVideos(subscription, customDate = null, includeShorts 
         stderr += data.toString();
       });
       
-      childProcess.on('close', (code) => {
+      childProcess.on('close', async (code) => {
         if (code !== 0 && !stderr.includes('WARNING')) {
           console.error(`Error checking videos for ${channelName}:`, stderr);
           resolve([]);
@@ -322,17 +326,17 @@ async function checkForNewVideos(subscription, customDate = null, includeShorts 
             
             // Move last_checked forward to now to "acknowledge" these videos
             // and prevent redundant checks for the same window.
-            updateSubscription(channelName, {
+            await updateSubscription(channelName, {
               last_checked: new Date().toISOString(),
               last_success: new Date().toISOString()
-            }).catch(err => console.error('Error updating subscription:', err));
+            });
           }
         } else if (!customDate) {
           // Even if no new videos, update last_checked to show the check happened
-          updateSubscription(channelName, {
+          await updateSubscription(channelName, {
             last_checked: new Date().toISOString(),
             last_success: new Date().toISOString()
-          }).catch(err => console.error('Error updating subscription:', err));
+          });
         }
         
         resolve(videos);
