@@ -25,15 +25,80 @@ const Subscriptions = () => {
   const [newQuality, setNewQuality] = useState('1080p');
   const [addLoading, setAddLoading] = useState(false);
   const [addError, setAddError] = useState('');
+  
+  // Custom date inputs
+  const [dateDay, setDateDay] = useState('');
+  const [dateMonth, setDateMonth] = useState('');
+  const [dateYear, setDateYear] = useState('');
+  const [dateError, setDateError] = useState('');
+  
   const [customCheckDate, setCustomCheckDate] = useState('');
   const [showCustomDateModal, setShowCustomDateModal] = useState(false);
   const [selectedSubscription, setSelectedSubscription] = useState(null);
   const [checkingChannels, setCheckingChannels] = useState({}); // channelName -> boolean
+  const [checkStatus, setCheckStatus] = useState({}); // channelName -> { status, message, step, current, total, count }
   const [checkingAll, setCheckingAll] = useState(false);
   const navigate = useNavigate();
 
+  // WebSocket connection for real-time updates
   useEffect(() => {
     loadSubscriptions();
+    
+    // Connect to WebSocket for subscription check status updates
+    const hostname = window.location.hostname;
+    const ws = new WebSocket(`ws://${hostname}:5000/ws/downloads`);
+    
+    ws.onopen = () => {
+      console.log('WebSocket connected for subscription updates');
+    };
+    
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        
+        // Handle subscription check status updates
+        if (data.type === 'subscription_check_status') {
+          const { channelName, status, step, message, current, total, count } = data;
+          
+          setCheckStatus(prev => ({
+            ...prev,
+            [channelName]: {
+              status,
+              step,
+              message,
+              current,
+              total,
+              count
+            }
+          }));
+          
+          // Clear status after completion or error
+          if (status === 'complete' || status === 'error') {
+            setTimeout(() => {
+              setCheckStatus(prev => {
+                const newStatus = { ...prev };
+                delete newStatus[channelName];
+                return newStatus;
+              });
+            }, 5000); // Keep success/error message for 5 seconds
+          }
+        }
+      } catch (error) {
+        console.error('Error parsing WebSocket message:', error);
+      }
+    };
+    
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+    
+    ws.onclose = () => {
+      console.log('WebSocket disconnected');
+    };
+    
+    return () => {
+      ws.close();
+    };
   }, []);
 
   const loadSubscriptions = async () => {
@@ -156,28 +221,70 @@ const Subscriptions = () => {
     }
   };
 
+  const validateDate = () => {
+    const day = parseInt(dateDay, 10);
+    const month = parseInt(dateMonth, 10);
+    const year = parseInt(dateYear, 10);
+
+    if (!dateDay || !dateMonth || !dateYear) {
+      setDateError('Please enter a complete date');
+      return null;
+    }
+
+    if (isNaN(day) || isNaN(month) || isNaN(year)) {
+      setDateError('Date must be valid numbers');
+      return null;
+    }
+
+    if (month < 1 || month > 12) {
+      setDateError('Month must be between 1 and 12');
+      return null;
+    }
+
+    // Days in month check
+    const daysInMonth = new Date(year, month, 0).getDate();
+    if (day < 1 || day > daysInMonth) {
+      setDateError(`Day must be between 1 and ${daysInMonth} for selected month`);
+      return null;
+    }
+
+    // Removed future date restriction - allow any date
+    setDateError('');
+    // Return YYYY-MM-DD format for API
+    return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+  };
+
   const handleCheckFromCustomDate = async (e) => {
     e.preventDefault();
-    if (!selectedSubscription || !customCheckDate) return;
+    if (!selectedSubscription) return;
+
+    const formattedDate = validateDate();
+    if (!formattedDate) {
+      return; // Validation failed
+    }
 
     try {
       if (selectedSubscription === 'all') {
         // Check all subscriptions from custom date
-        await handleCheckAllNow(customCheckDate);
+        await handleCheckAllNow(formattedDate);
       } else {
         // Check single subscription from custom date
-        const response = await fetch(`${API_BASE_URL}/api/subscriptions/${encodeURIComponent(selectedSubscription)}/check?customDate=${customCheckDate}`);
+        const response = await fetch(`${API_BASE_URL}/api/subscriptions/${encodeURIComponent(selectedSubscription)}/check?customDate=${formattedDate}`);
         const newVideos = await response.json();
         
         if (newVideos.length > 0) {
-          alert(`Found ${newVideos.length} new videos from ${customCheckDate}`);
+          alert(`Found ${newVideos.length} new videos from ${dateDay}/${dateMonth}/${dateYear}`);
         } else {
-          alert(`No new videos found from ${customCheckDate}`);
+          alert(`No new videos found from ${dateDay}/${dateMonth}/${dateYear}`);
         }
       }
       
       setShowCustomDateModal(false);
-      setCustomCheckDate('');
+      // Reset fields
+      setDateDay('');
+      setDateMonth('');
+      setDateYear('');
+      setDateError('');
       setSelectedSubscription(null);
     } catch (error) {
       console.error('Error checking for new videos:', error);
@@ -253,7 +360,11 @@ const Subscriptions = () => {
         <button 
           className="check-all-date-button"
           onClick={() => {
-            setCustomCheckDate(new Date().toISOString().split('T')[0]);
+            const now = new Date();
+            setDateDay(now.getDate().toString());
+            setDateMonth((now.getMonth() + 1).toString());
+            setDateYear(now.getFullYear().toString());
+            setDateError('');
             setShowCustomDateModal(true);
             setSelectedSubscription('all');
           }}
@@ -415,7 +526,11 @@ const Subscriptions = () => {
                   className="check-date-button"
                   onClick={() => {
                     setSelectedSubscription(subscription.channelName);
-                    setCustomCheckDate(new Date().toISOString().split('T')[0]);
+                    const now = new Date();
+                    setDateDay(now.getDate().toString());
+                    setDateMonth((now.getMonth() + 1).toString());
+                    setDateYear(now.getFullYear().toString());
+                    setDateError('');
                     setShowCustomDateModal(true);
                   }}
                 >
@@ -438,6 +553,38 @@ const Subscriptions = () => {
                   Delete
                 </button>
               </div>
+              
+              {/* Real-time check status */}
+              {checkStatus[subscription.channelName] && (
+                <div className={`check-status ${checkStatus[subscription.channelName].status}`}>
+                  <div className="status-message">
+                    {checkStatus[subscription.channelName].message}
+                  </div>
+                  {checkStatus[subscription.channelName].step === 'filtering' && 
+                   checkStatus[subscription.channelName].current !== undefined && 
+                   checkStatus[subscription.channelName].total !== undefined && (
+                    <div className="status-progress">
+                      <div className="progress-bar-container">
+                        <div 
+                          className="progress-bar-fill" 
+                          style={{ 
+                            width: `${(checkStatus[subscription.channelName].current / checkStatus[subscription.channelName].total) * 100}%` 
+                          }}
+                        />
+                      </div>
+                      <div className="progress-text">
+                        {checkStatus[subscription.channelName].current} / {checkStatus[subscription.channelName].total} videos checked
+                      </div>
+                    </div>
+                  )}
+                  {checkStatus[subscription.channelName].count !== undefined && 
+                   checkStatus[subscription.channelName].status === 'complete' && (
+                    <div className="status-count">
+                      ✓ Found {checkStatus[subscription.channelName].count} new video{checkStatus[subscription.channelName].count !== 1 ? 's' : ''}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -450,17 +597,60 @@ const Subscriptions = () => {
             <h2>Check Videos From Date</h2>
             <form onSubmit={handleCheckFromCustomDate}>
               <div className="form-group">
-                <label htmlFor="customDate">Select Date (DD/MM/YYYY):</label>
-                <input
-                  id="customDate"
-                  type="date"
-                  value={customCheckDate}
-                  onChange={(e) => setCustomCheckDate(e.target.value)}
-                  max={new Date().toISOString().split('T')[0]}
-                  required
-                />
-                <p className="date-format-hint" style={{ fontSize: '0.85rem', color: '#666', marginTop: '4px' }}>
-                  Please enter date in DD/MM/YYYY format (e.g., 15/02/2026)
+                <label>Select Date (DD / MM / YYYY):</label>
+                <div className="date-inputs-container">
+                  <input
+                    type="number"
+                    placeholder="DD"
+                    value={dateDay}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (!val || (parseInt(val) >= 0 && parseInt(val) <= 31)) {
+                        setDateDay(val);
+                        setDateError('');
+                      }
+                    }}
+                    required
+                    className="date-input"
+                  />
+                  <span className="date-separator">/</span>
+                  <input
+                    type="number"
+                    placeholder="MM"
+                    value={dateMonth}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (!val || (parseInt(val) >= 0 && parseInt(val) <= 12)) {
+                        setDateMonth(val);
+                        setDateError('');
+                      }
+                    }}
+                    required
+                    className="date-input"
+                  />
+                  <span className="date-separator">/</span>
+                  <input
+                    type="number"
+                    placeholder="YYYY"
+                    value={dateYear}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (!val || val.length <= 4) {
+                        setDateYear(val);
+                        setDateError('');
+                      }
+                    }}
+                    required
+                    className="date-input year-input"
+                  />
+                </div>
+                {dateError && (
+                  <p className="error-message date-error" style={{ marginTop: '0.5rem', marginBottom: 0 }}>
+                    {dateError}
+                  </p>
+                )}
+                <p className="date-format-hint">
+                  Enter date to check videos from (e.g., 15/02/2026)
                 </p>
               </div>
               
@@ -473,7 +663,10 @@ const Subscriptions = () => {
                   className="cancel-button"
                   onClick={() => {
                     setShowCustomDateModal(false);
-                    setCustomCheckDate('');
+                    setDateDay('');
+                    setDateMonth('');
+                    setDateYear('');
+                    setDateError('');
                     setSelectedSubscription(null);
                   }}
                 >

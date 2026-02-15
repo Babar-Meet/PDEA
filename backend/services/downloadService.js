@@ -4,7 +4,6 @@ const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const downloadManager = require('./DownloadManager');
 const thumbnailService = require('./thumbnailService');
-const subscriptionService = require('./subscriptionService');
 
 
 const publicDir = path.join(__dirname, '../public');
@@ -638,9 +637,15 @@ class DownloadService {
     if (!metadata.batchId) {
       downloadManager.updateProgress(downloadId, { status: 'starting' });
       this.startProcess(downloadId, args, outputTemplate);
+      
       // Notify subscription service about new download
-      if (typeof subscriptionService.incrementActiveDownloads === 'function') {
-        subscriptionService.incrementActiveDownloads();
+      try {
+        const subService = require('./subscriptionService');
+        if (typeof subService.incrementActiveDownloads === 'function') {
+          subService.incrementActiveDownloads();
+        }
+      } catch (e) {
+        // Ignore if error loading subService
       }
     } else {
       this.queue.push({ downloadId, args, outputTemplate, isBatch: true });
@@ -768,8 +773,13 @@ class DownloadService {
       
       if (isCancelled || isPaused) {
         // Notify subscription service about cancelled/paused download
-        if (typeof subscriptionService.decrementActiveDownloads === 'function') {
-          subscriptionService.decrementActiveDownloads();
+        try {
+          const subService = require('./subscriptionService');
+          if (typeof subService.decrementActiveDownloads === 'function') {
+            subService.decrementActiveDownloads();
+          }
+        } catch (e) {
+          // Ignore
         }
         return;
       }
@@ -781,8 +791,13 @@ class DownloadService {
       }
       
       // Notify subscription service about completed download
-      if (typeof subscriptionService.decrementActiveDownloads === 'function') {
-        subscriptionService.decrementActiveDownloads();
+      try {
+        const subService = require('./subscriptionService');
+        if (typeof subService.decrementActiveDownloads === 'function') {
+          subService.decrementActiveDownloads();
+        }
+      } catch (e) {
+        // Ignore
       }
       
       if (isBatch) {

@@ -6,6 +6,7 @@ const util = require('util');
 const execPromise = util.promisify(exec);
 const pendingVideosService = require('./pendingVideosService');
 const downloadService = require('./downloadService');
+const downloadManager = require('./DownloadManager');
 
 const SUBSCRIPTIONS_DIR = path.join(__dirname, '../public/Subscriptions');
 const TRASH_DIR = path.join(__dirname, '../public/trash');
@@ -65,7 +66,7 @@ async function loadSubscriptions() {
 }
 
 // Create a new subscription
-async function createSubscription(channelName, channelUrl, selected_quality = '1080p') {
+async function createSubscription(channelName, channelUrl, selected_quality = '720p') {
   const channelDir = path.join(SUBSCRIPTIONS_DIR, channelName);
   const subscriptionPath = path.join(channelDir, '.subscription.json');
   
@@ -324,6 +325,20 @@ async function checkForNewVideos(subscription, customDate = null) {
   }
 }
 
+// New robust download function to avoid circular dependency issues
+async function subscriptionDirectDownload(params) {
+  // Require here to avoid top-level circular dependency
+  const ds = require('./downloadService');
+  
+  if (typeof ds.startDirectDownload !== 'function') {
+    console.error('[Subscription Service] downloadService.startDirectDownload is still not a function!');
+    // Fallback logic if needed, but the cycle should be broken now
+    throw new Error('Download service is not properly initialized');
+  }
+  
+  return await ds.startDirectDownload(params);
+}
+
 // Download a video
 async function downloadVideo(video, subscription) {
   const { channelName, selected_quality } = subscription;
@@ -335,8 +350,8 @@ async function downloadVideo(video, subscription) {
   // Track active download
   activeDownloadCount++;
   
-  const saveDir = `Subscriptions/${channelName}`;
   const url = `https://www.youtube.com/watch?v=${id}`;
+  const saveDir = `Subscriptions/${channelName}`;
   
   // Map subscription quality to download manager quality keys
   const qualityMap = {
@@ -348,7 +363,7 @@ async function downloadVideo(video, subscription) {
   try {
     console.log(`[Auto-Download] Queuing video: ${title} from ${channelName} (Quality: ${selected_quality})`);
     
-    await downloadService.startDirectDownload({
+    await subscriptionDirectDownload({
       url,
       saveDir,
       mode: 'planned',
@@ -376,6 +391,7 @@ async function downloadVideo(video, subscription) {
     return true;
   } catch (error) {
     console.error(`[Auto-Download] Error queuing video ${title}:`, error);
+    console.error(`[Auto-Download] Error stack:`, error.stack);
     pendingVideosService.updatePendingVideoStatus(channelName, id, 'error');
     throw error;
   } finally {

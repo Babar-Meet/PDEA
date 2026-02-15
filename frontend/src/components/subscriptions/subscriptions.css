@@ -405,6 +405,52 @@
     margin-top: 0.5rem;
   }
 
+  .date-inputs-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+
+  .date-input {
+    width: 60px;
+    padding: 0.5rem;
+    background: var(--bg-secondary, #313244);
+    color: var(--text-primary, #cdd6f4);
+    border: 1px solid var(--border-color, #45475a);
+    border-radius: 4px;
+    font-size: 1rem;
+    text-align: center;
+  }
+
+  .date-input.year-input {
+    width: 80px;
+  }
+
+  .date-separator {
+    font-size: 1.2rem;
+    color: var(--text-secondary, #a6adc8);
+    font-weight: bold;
+  }
+
+  .date-input:focus {
+    outline: none;
+    border-color: var(--accent-color, #89b4fa);
+  }
+
+  /* Remove number input arrows */
+  .date-input::-webkit-inner-spin-button,
+  .date-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .date-input {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+
+
 @media (max-width: 768px) {
   .subscriptions {
     padding: 0.5rem;

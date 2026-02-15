@@ -47,6 +47,15 @@ class DownloadManager {
     });
   }
 
+  broadcast(data) {
+    const message = JSON.stringify(data);
+    this.wsClients.forEach(client => {
+      if (client.readyState === 1) {
+        client.send(message);
+      }
+    });
+  }
+
   broadcastProgress(downloadId, progressData) {
     const message = JSON.stringify({
       type: 'progress',
