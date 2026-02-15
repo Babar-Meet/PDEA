@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react'
 import VideoGrid from '../../components/VideoGrid/VideoGrid'
-import { Grid, List, FolderOpen, Folder, ListVideo } from 'lucide-react'
+import { Grid, List, FolderOpen, Folder, ListVideo, Shuffle } from 'lucide-react'
 import './Home.css'
 
 const Home = ({ videos, categories, loading, fetchVideos, thumbnailsNeeded }) => {
   const [viewMode, setViewMode] = useState('grid')
   const [selectedCategory, setSelectedCategory] = useState('all')
+  const [displayVideos, setDisplayVideos] = useState([])
   const categoryFilterRef = useRef(null)
   const [isDragging, setIsDragging] = useState(false)
   const [startX, setStartX] = useState(0)
@@ -122,22 +123,57 @@ const Home = ({ videos, categories, loading, fetchVideos, thumbnailsNeeded }) =>
 
   const sidebarCategories = getSidebarCategories()
 
+  // Shuffle function
+  const shuffleArray = (array) => {
+    const shuffled = [...array]
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+    }
+    return shuffled
+  }
+
   // Filter videos based on selected category
-  const filteredVideos = () => {
+  const getFilteredVideos = () => {
     // Basic filter to always exclude ambience and trash from the main lists
     const baseVideos = videos.filter(v => {
       const lowerFolder = (v.folder || '').toLowerCase();
       return !lowerFolder.startsWith('ambience') && !lowerFolder.startsWith('trash');
     });
 
-    if (selectedCategory === 'all') return baseVideos;
+    if (selectedCategory === 'all') {
+      // For "All Videos", also exclude playlist videos as requested
+      return baseVideos.filter(v => {
+        const lowerFolder = (v.folder || '').toLowerCase();
+        return !lowerFolder.startsWith('playlist');
+      });
+    }
+    
     if (selectedCategory === 'my-videos') return baseVideos.filter(v => !v.folder || v.folder === '');
     
     // For folder/playlist categories
     return baseVideos.filter(video => video.folder === selectedCategory);
   }
 
-  const currentVideos = filteredVideos()
+  // Handle shuffling and updating local state
+  const handleShuffle = () => {
+    const filtered = getFilteredVideos()
+    setDisplayVideos(shuffleArray(filtered))
+  }
+
+  // Update display videos when category or source videos change
+  useEffect(() => {
+    const filtered = getFilteredVideos()
+    if (selectedCategory === 'all') {
+      // Shuffale on home load or when returning to "All Videos"
+      setDisplayVideos(shuffleArray(filtered))
+    } else {
+      // For specific categories, keep original order (usually chronological or as fetched)
+      setDisplayVideos(filtered)
+    }
+  }, [selectedCategory, videos])
+
+  const currentVideos = displayVideos
   const currentCategory = sidebarCategories.find(cat => cat.id === selectedCategory) || { displayName: 'All Videos' }
 
   // Mouse events for horizontal drag scrolling
@@ -244,7 +280,9 @@ const Home = ({ videos, categories, loading, fetchVideos, thumbnailsNeeded }) =>
       <div className="home__header">
         <div className="header__left">
           <h2 className="home__title">
-            {currentCategory.displayName}
+            {selectedCategory === 'all' 
+              ? 'All Videos (Excluding Playlists)' 
+              : currentCategory.displayName}
           </h2>
           {selectedCategory !== 'all' && selectedCategory !== 'my-videos' && (
             <div className="category-info">
@@ -254,6 +292,16 @@ const Home = ({ videos, categories, loading, fetchVideos, thumbnailsNeeded }) =>
           )}
         </div>
         <div className="view-toggle">
+          {/* Shuffle Button in Header */}
+          <button
+            className="view-toggle__btn shuffle-btn-header"
+            onClick={handleShuffle}
+            title="Shuffle Videos"
+          >
+            <Shuffle size={20} />
+            <span className="shuffle-btn-header__text">Shuffle</span>
+          </button>
+
           <button
             className={`view-toggle__btn ${viewMode === 'grid' ? 'active' : ''}`}
             onClick={() => setViewMode('grid')}

@@ -116,6 +116,36 @@
   transform: scale(0.98);
 }
 
+.shuffle-btn-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 8px 16px;
+  border-radius: 8px;
+  margin-right: 8px;
+}
+
+.shuffle-btn-header:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.shuffle-btn-header__text {
+  font-size: 14px;
+  font-weight: 500;
+  color: #ffffff;
+}
+
+@media (max-width: 500px) {
+  .shuffle-btn-header__text {
+    display: none;
+  }
+  .shuffle-btn-header {
+    padding: 8px;
+    margin-right: 4px;
+  }
+}
+
 .category-btn__text {
   overflow: hidden;
   text-overflow: ellipsis;

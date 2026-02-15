@@ -1,13 +1,16 @@
 import React from 'react'
 import VideoCard from '../VideoCard/VideoCard'
 import './VideoGrid.css'
+import VideoSkeleton from './VideoSkeleton'
 
 const VideoGrid = ({ videos, loading, viewMode = 'grid' }) => {
-  if (loading) {
+  if (loading && videos.length === 0) {
+    const skeletonCount = 8
     return (
-      <div className="video-grid__loading">
-        <div className="loading-spinner"></div>
-        <p>Loading videos...</p>
+      <div className={`video-grid video-grid--${viewMode}`}>
+        {[...Array(skeletonCount)].map((_, i) => (
+          <VideoSkeleton key={i} viewMode={viewMode} />
+        ))}
       </div>
     )
   }
