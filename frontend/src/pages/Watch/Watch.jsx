@@ -16,7 +16,7 @@ const Watch = ({ videos, fetchVideos }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showTrashConfirm, setShowTrashConfirm] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
-  const [cinemaMode, setCinemaMode] = useState(false)
+  const [cinemaMode, setCinemaMode] = useState(true)
 
   useEffect(() => {
     const handleKeyDown = (e) => {
