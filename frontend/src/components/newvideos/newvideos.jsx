@@ -231,6 +231,12 @@ const NewVideos = () => {
                     {isAutoDownloading && (
                       <div className="auto-download-badge">Auto-Queued</div>
                     )}
+                    {video.is_short && (
+                      <div className="shorts-badge">Short</div>
+                    )}
+                    {video.is_live && (
+                      <div className="live-badge">Live</div>
+                    )}
                   </div>
                 )}
                 

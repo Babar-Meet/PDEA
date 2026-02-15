@@ -150,6 +150,38 @@
   100% { transform: scale(1); box-shadow: 0 4px 12px rgba(166, 227, 161, 0.3); }
 }
 
+.shorts-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: linear-gradient(135deg, #fab387 0%, #f9e2af 100%);
+  color: #11111b;
+  padding: 0.3rem 0.7rem;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+}
+
+.live-badge {
+  position: absolute;
+  top: 12px;
+  left: 70px; /* Offset from Shorts badge */
+  background: linear-gradient(135deg, #f38ba8 0%, #eba0ac 100%);
+  color: #11111b;
+  padding: 0.3rem 0.7rem;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+}
+
 .video-info {
   padding: 1.5rem;
 }

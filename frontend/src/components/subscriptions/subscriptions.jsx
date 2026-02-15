@@ -30,6 +30,8 @@ const Subscriptions = () => {
   const [dateDay, setDateDay] = useState('');
   const [dateMonth, setDateMonth] = useState('');
   const [dateYear, setDateYear] = useState('');
+  const [includeShorts, setIncludeShorts] = useState(false);
+  const [includeLive, setIncludeLive] = useState(false);
   const [dateError, setDateError] = useState('');
   
   const [customCheckDate, setCustomCheckDate] = useState('');
@@ -274,8 +276,8 @@ const Subscriptions = () => {
         console.log('[Subscriptions] Checking ALL subscriptions from', formattedDate);
         await handleCheckAllNow(formattedDate);
       } else {
-        console.log(`[Subscriptions] Checking ${selectedSubscription} from`, formattedDate);
-        const response = await fetch(`${API_BASE_URL}/api/subscriptions/${encodeURIComponent(selectedSubscription)}/check?customDate=${formattedDate}`);
+        console.log(`[Subscriptions] Checking ${selectedSubscription} from`, formattedDate, 'Include Shorts:', includeShorts, 'Include Live:', includeLive);
+        const response = await fetch(`${API_BASE_URL}/api/subscriptions/${encodeURIComponent(selectedSubscription)}/check?customDate=${formattedDate}&includeShorts=${includeShorts}&includeLive=${includeLive}`);
         const newVideos = await response.json();
         
         if (newVideos.length > 0) {
@@ -308,7 +310,9 @@ const Subscriptions = () => {
     try {
       let url = `${API_BASE_URL}/api/subscriptions/check-all`;
       if (customDate) {
-        url += `?customDate=${customDate}`;
+        url += `?customDate=${customDate}&includeShorts=${includeShorts}&includeLive=${includeLive}`;
+      } else {
+        url += `?includeShorts=${includeShorts}&includeLive=${includeLive}`;
       }
       
       const response = await fetch(url, {
@@ -375,6 +379,9 @@ const Subscriptions = () => {
             setDateDay(now.getDate().toString());
             setDateMonth((now.getMonth() + 1).toString());
             setDateYear(now.getFullYear().toString());
+            setDateYear(now.getFullYear().toString());
+            setIncludeShorts(false);
+            setIncludeLive(false);
             setDateError('');
             setShowCustomDateModal(true);
             setSelectedSubscription('all');
@@ -521,6 +528,32 @@ const Subscriptions = () => {
                       <span className="value">{subscription.retry_count}/3</span>
                     </div>
                   )}
+
+                  <div className="filtering-toggles">
+                    <div className="detail-item">
+                      <span className="label">Skip Shorts:</span>
+                      <button 
+                        className={`toggle-shorts-btn ${subscription.skip_shorts !== false ? 'active' : ''}`}
+                        onClick={() => handleUpdateSubscription(subscription.channelName, {
+                          skip_shorts: subscription.skip_shorts !== false ? false : true
+                        })}
+                      >
+                        {subscription.skip_shorts !== false ? 'ON' : 'OFF'}
+                      </button>
+                    </div>
+
+                    <div className="detail-item">
+                      <span className="label">Skip Live:</span>
+                      <button 
+                        className={`toggle-live-btn ${subscription.skip_live !== false ? 'active' : ''}`}
+                        onClick={() => handleUpdateSubscription(subscription.channelName, {
+                          skip_live: subscription.skip_live !== false ? false : true
+                        })}
+                      >
+                        {subscription.skip_live !== false ? 'ON' : 'OFF'}
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
               
@@ -541,6 +574,8 @@ const Subscriptions = () => {
                     setDateDay(now.getDate().toString());
                     setDateMonth((now.getMonth() + 1).toString());
                     setDateYear(now.getFullYear().toString());
+                    setIncludeShorts(false);
+                    setIncludeLive(false);
                     setDateError('');
                     setShowCustomDateModal(true);
                   }}
@@ -663,6 +698,25 @@ const Subscriptions = () => {
                 <p className="date-format-hint">
                   Enter date to check videos from (e.g., 15/02/2026)
                 </p>
+              </div>
+
+              <div className="form-group shorts-checkbox-group">
+                <label className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={includeShorts}
+                    onChange={(e) => setIncludeShorts(e.target.checked)}
+                  />
+                  <span>Include YouTube Shorts</span>
+                </label>
+                <label className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={includeLive}
+                    onChange={(e) => setIncludeLive(e.target.checked)}
+                  />
+                  <span>Include Live Streams</span>
+                </label>
               </div>
               
               <div className="form-actions">

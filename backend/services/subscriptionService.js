@@ -78,6 +78,8 @@ async function createSubscription(channelName, channelUrl, selected_quality = '7
     channel_url: channelUrl,
     selected_quality: selected_quality,
     auto_download: true,
+    skip_shorts: true,
+    skip_live: true,
     last_checked: new Date().toISOString(),
     retry_count: 0,
     last_error: null,
@@ -134,8 +136,12 @@ async function updateSubscription(channelName, updates) {
 }
 
 // Check for new videos in a channel
-async function checkForNewVideos(subscription, customDate = null) {
+async function checkForNewVideos(subscription, customDate = null, includeShorts = null, includeLive = null) {
   const { channelName, channel_url, last_checked } = subscription;
+  
+  // Decision logic for filters
+  const shouldSkipShorts = includeShorts !== null ? !includeShorts : (subscription.skip_shorts !== false); // default to true if undefined
+  const shouldSkipLive = includeLive !== null ? !includeLive : (subscription.skip_live !== false); // default to true if undefined
   
   // Skip if too many concurrent checks
   if (concurrentCheckCount >= MAX_CONCURRENT_CHECKS) {
@@ -161,7 +167,23 @@ async function checkForNewVideos(subscription, customDate = null) {
     // Use a more unique delimiter to avoid issues with titles/URLs containing |
     const delimiter = '###SEP###';
     
-    console.log(`[Subscription Service] Checking ${channelName} for videos since ${dateAfter}...`);
+    console.log(`[Subscription Service] Checking ${channelName} for videos since ${dateAfter}... (Skip Shorts: ${shouldSkipShorts}, Skip Live: ${shouldSkipLive})`);
+    
+    // Build match filter
+    let matchFilter = '';
+    const filters = [];
+    
+    if (shouldSkipLive) {
+      filters.push('!is_live & !was_live');
+    }
+    
+    if (shouldSkipShorts) {
+      filters.push('duration>=60');
+    }
+    
+    if (filters.length > 0) {
+      matchFilter = filters.join(' & ');
+    }
     
     // Use spawn with lower priority on Windows
     const command = ytDlp;
@@ -170,9 +192,12 @@ async function checkForNewVideos(subscription, customDate = null) {
       '--dateafter', dateAfter,
       '--flat-playlist',
       '--extractor-args', 'youtubetab:approximate_date',  // CRITICAL: Forces upload_date in flat mode
-      '--print', `%(id)s${delimiter}%(title)s${delimiter}%(upload_date)s${delimiter}%(thumbnail)s${delimiter}%(timestamp)s`,
-      '--js-runtimes', 'node'
+      '--print', `%(id)s${delimiter}%(title)s${delimiter}%(upload_date)s${delimiter}%(thumbnail)s${delimiter}%(timestamp)s${delimiter}%(duration)s${delimiter}%(is_live)s`
     ];
+    
+    if (matchFilter) {
+      args.push('--match-filter', matchFilter);
+    }
     
     return new Promise((resolve, reject) => {
       let stdout = '';
@@ -223,8 +248,12 @@ async function checkForNewVideos(subscription, customDate = null) {
           const parts = line.split(delimiter);
           if (parts.length < 2) continue;
           
-          const [id, title, uploadDate, thumbnail, timestamp] = parts;
+          const [id, title, uploadDate, thumbnail, timestamp, duration, isLiveStr] = parts;
           
+          // Additional info for UI
+          const isShort = duration && duration !== 'NA' && !isNaN(duration) && parseFloat(duration) < 60;
+          const isLive = isLiveStr === 'true';
+
           // Determine if this video is new
           let isNew = true;
           
@@ -247,17 +276,10 @@ async function checkForNewVideos(subscription, customDate = null) {
               isNew = false;
             }
           }
-          // 3. If still no usable date info (rare with extractor arg), include but warn
-          else {
-            console.warn(`Video ${id} has no valid date information – including by default`);
-            // Still include it to be safe
-          }
           
           if (isNew) {
             // Process thumbnail URL
             let processedThumbnail = thumbnail && thumbnail !== 'NA' ? thumbnail : null;
-            
-            // If thumbnail is missing, construct a fallback YouTube thumbnail URL
             if (!processedThumbnail) {
               processedThumbnail = `https://i.ytimg.com/vi/${id}/mqdefault.jpg`;
             }
@@ -273,7 +295,6 @@ async function checkForNewVideos(subscription, customDate = null) {
               }
             }
             
-            // Fallback to current date if missing
             if (!processedUploadDate) {
               processedUploadDate = new Date().toISOString().split('T')[0];
             }
@@ -283,7 +304,9 @@ async function checkForNewVideos(subscription, customDate = null) {
               title,
               upload_date: processedUploadDate,
               thumbnail: processedThumbnail,
-              channel_name: channelName
+              channel_name: channelName,
+              is_short: isShort,
+              is_live: isLive
             });
           }
         }

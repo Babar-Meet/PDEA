@@ -70,7 +70,7 @@ async function updateSubscription(req, res) {
 async function checkForNewVideos(req, res) {
   try {
     const { channelName } = req.params;
-    const { customDate } = req.query;
+    const { customDate, includeShorts, includeLive } = req.query;
     
     const subscriptions = await subscriptionService.loadSubscriptions();
     const subscription = subscriptions.find(sub => sub.channelName === channelName);
@@ -79,7 +79,9 @@ async function checkForNewVideos(req, res) {
       return res.status(404).json({ error: 'Subscription not found' });
     }
     
-    const newVideos = await subscriptionService.checkForNewVideos(subscription, customDate);
+    const parsedIncludeShorts = includeShorts === 'true' ? true : (includeShorts === 'false' ? false : null);
+    const parsedIncludeLive = includeLive === 'true' ? true : (includeLive === 'false' ? false : null);
+    const newVideos = await subscriptionService.checkForNewVideos(subscription, customDate, parsedIncludeShorts, parsedIncludeLive);
     res.json(newVideos);
   } catch (error) {
     console.error('Error checking for new videos:', error);
@@ -159,13 +161,16 @@ async function getPendingVideos(req, res) {
 
 async function checkAllSubscriptions(req, res) {
   try {
-    const { customDate } = req.query;
+    const { customDate, includeShorts, includeLive } = req.query;
     const subscriptions = await subscriptionService.loadSubscriptions();
     const results = [];
     
+    const parsedIncludeShorts = includeShorts === 'true' ? true : (includeShorts === 'false' ? false : null);
+    const parsedIncludeLive = includeLive === 'true' ? true : (includeLive === 'false' ? false : null);
+
     for (const subscription of subscriptions) {
       try {
-        const newVideos = await subscriptionService.checkForNewVideos(subscription, customDate);
+        const newVideos = await subscriptionService.checkForNewVideos(subscription, customDate, parsedIncludeShorts, parsedIncludeLive);
         
         if (subscription.auto_download && newVideos.length > 0) {
           for (const video of newVideos) {
