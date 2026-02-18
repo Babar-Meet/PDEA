@@ -17,7 +17,7 @@
 .video-sidebar__title {
   font-size: 16px;
   font-weight: 700;
-  color: #0f0f0f;
+  color: var(--text-primary);
   margin: 0 0 12px 0;
   padding: 0;
   letter-spacing: -0.3px;
@@ -29,7 +29,7 @@
   width: 100%;
 }
 
-/* Dark mode fade effect */
+/* Fade effect — uses bg-primary so it blends with the page */
 .video-sidebar__category-filter-container::before,
 .video-sidebar__category-filter-container::after {
   content: '';
@@ -39,34 +39,23 @@
   width: 24px;
   pointer-events: none;
   z-index: 2;
-  opacity: 0.7; /* Slightly visible by default */
+  opacity: 0.7;
   transition: opacity 0.2s ease;
 }
 
 .video-sidebar__category-filter-container:hover::before,
 .video-sidebar__category-filter-container:hover::after {
-  opacity: 1; /* Fully visible on hover (darker) */
+  opacity: 1;
 }
 
 .video-sidebar__category-filter-container::before {
   left: 0;
-  background: linear-gradient(to right, rgba(15, 15, 15, 0.95), transparent);
+  background: linear-gradient(to right, var(--bg-primary), transparent);
 }
 
 .video-sidebar__category-filter-container::after {
   right: 0;
-  background: linear-gradient(to left, rgba(15, 15, 15, 0.95), transparent);
-}
-
-/* Light mode fade effect */
-@media (prefers-color-scheme: light) {
-  .video-sidebar__category-filter-container::before {
-    background: linear-gradient(to right, rgba(255, 255, 255, 0.95), transparent);
-  }
-  
-  .video-sidebar__category-filter-container::after {
-    background: linear-gradient(to left, rgba(255, 255, 255, 0.95), transparent);
-  }
+  background: linear-gradient(to left, var(--bg-primary), transparent);
 }
 
 .video-sidebar__category-filter {
@@ -75,14 +64,13 @@
   overflow-x: auto;
   padding: 4px 0 8px 0;
   margin: 0;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   cursor: grab;
   user-select: none;
   scroll-behavior: smooth;
 }
 
-/* Hide scrollbar for Chrome, Safari and Opera */
 .video-sidebar__category-filter::-webkit-scrollbar {
   display: none;
 }
@@ -93,9 +81,9 @@
 }
 
 .category-btn {
-  background: rgba(255, 255, 255, 0.08);
-  border: none;
-  color: #f1f1f1;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
   font-size: 14px;
   font-weight: 500;
   padding: 8px 12px;
@@ -109,16 +97,17 @@
 }
 
 .category-btn:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--sidebar-hover);
+  border-color: var(--border-color-hover);
 }
 
 .category-btn.active {
-  background: #f1f1f1;
-  color: #0f0f0f;
-  font-weight: 500;
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  border-color: var(--text-primary);
+  font-weight: 600;
 }
 
-/* Active state for touch devices */
 .category-btn:active {
   transform: scale(0.98);
 }
@@ -131,14 +120,14 @@
 }
 
 .video-sidebar__empty {
-  color: #f1f1f1;
   font-size: 14px;
   text-align: center;
   padding: 32px 0;
-  color: #aaa;
-  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-secondary);
+  background: var(--bg-input);
   border-radius: 12px;
   margin-top: 8px;
+  border: 1px solid var(--border-color);
 }
 
 /* YouTube-like VideoCard spacing for compact mode */
@@ -147,7 +136,7 @@
 }
 
 .video-card--compact:hover {
-  background-color: rgba(255, 255, 255, 0.08);
+  background-color: var(--sidebar-hover);
   border-radius: 8px;
 }
 
@@ -157,11 +146,11 @@
     width: 348px;
     margin-left: 16px;
   }
-  
+
   .video-sidebar__category-filter {
     gap: 6px;
   }
-  
+
   .category-btn {
     padding: 6px 10px;
     font-size: 13px;
@@ -174,110 +163,62 @@
     margin-left: 0;
     margin-top: 24px;
     padding-top: 24px;
-    border-top: 1px solid #303030;
+    border-top: 1px solid var(--sidebar-border);
   }
-  
+
   .video-sidebar__list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 16px;
   }
-  
+
   .video-sidebar__category-filter {
     margin-bottom: 12px;
   }
 }
 
-/* Mobile responsive */
 @media (max-width: 768px) {
   .video-sidebar {
     padding-top: 16px;
     margin-top: 16px;
   }
-  
+
   .video-sidebar__list {
     grid-template-columns: 1fr;
     gap: 12px;
   }
-  
+
   .video-sidebar__title {
     font-size: 16px;
     margin-bottom: 12px;
   }
-  
+
   .video-sidebar__category-filter {
     gap: 4px;
     padding-bottom: 4px;
   }
-  
+
   .category-btn {
     padding: 8px 10px;
     font-size: 13px;
   }
 }
 
-/* YouTube-like dark mode support */
-@media (prefers-color-scheme: light) {
-  .video-sidebar__title {
-    color: #0f0f0f;
-  }
-  
-  .category-btn {
-    background: rgba(0, 0, 0, 0.06);
-    color: #0f0f0f;
-  }
-  
-  .category-btn:hover {
-    background: rgba(0, 0, 0, 0.1);
-  }
-  
-  .category-btn.active {
-    background: #0f0f0f;
-    color: #f1f1f1;
-  }
-  
-  .video-sidebar__empty {
-    color: #606060;
-    background: rgba(0, 0, 0, 0.04);
-  }
-  
-  .video-card--compact:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-  }
-  
-  @media (max-width: 1150px) {
-    .video-sidebar {
-      border-top: 1px solid #e5e5e5;
-    }
-  }
-  
-  /* Light mode fade effect */
-  .video-sidebar__category-filter-container::before {
-    background: linear-gradient(to right, rgba(255, 255, 255, 0.9), transparent);
-  }
-  
-  .video-sidebar__category-filter-container::after {
-    background: linear-gradient(to left, rgba(255, 255, 255, 0.9), transparent);
-  }
-}
-
-/* Touch device improvements */
 @media (hover: none) and (pointer: coarse) {
   .category-btn {
-    padding: 10px 12px; /* Larger touch target */
+    padding: 10px 12px;
   }
-  
+
   .video-sidebar__category-filter {
-    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    -webkit-overflow-scrolling: touch;
   }
-  
+
   .video-sidebar__category-filter-container::before,
   .video-sidebar__category-filter-container::after {
-    display: none; /* Hide fade effect on touch devices */
+    display: none;
   }
 }
 
-/* Small screens - hide fade effects */
 @media (max-width: 500px) {
   .video-sidebar__category-filter-container::before,
   .video-sidebar__category-filter-container::after {

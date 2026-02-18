@@ -363,12 +363,12 @@ const Header = ({ toggleSidebar }) => {
                   onClick={handleClearSearch}
                   aria-label="Clear search"
                 >
-                  <X size={16} />
+                  <X />
                 </button>
               )}
             </div>
             <button type="submit" className="search__button">
-              <Search size={20} />
+              <Search />
             </button>
 
             {/* Search Results Dropdown */}
@@ -454,7 +454,7 @@ const Header = ({ toggleSidebar }) => {
           </div>
         </form>
         <button className="header__mic-btn">
-          <Mic size={20} />
+          <Mic />
         </button>
       </div>
 
@@ -466,7 +466,7 @@ const Header = ({ toggleSidebar }) => {
             onClick={() => navigate('/download/new-videos')}
             title={`${pendingVideosCount} new video${pendingVideosCount > 1 ? 's' : ''} available`}
           >
-            <Video size={20} />
+            <Video />
             <span className="new-videos-count">{pendingVideosCount}</span>
           </div>
         )}
@@ -478,7 +478,7 @@ const Header = ({ toggleSidebar }) => {
             onClick={() => navigate('/download/progress')}
             title={`${activeDownloads.length} download${activeDownloads.length > 1 ? 's' : ''} in progress`}
           >
-            <Download size={20} className="download-icon-pulse" />
+            <Download className="download-icon-pulse" />
             <span className="download-count">{activeDownloads.length}</span>
           </div>
         )}
@@ -496,13 +496,13 @@ const Header = ({ toggleSidebar }) => {
             }}
             title={activeSounds.some(s => s.isPlaying) ? "Pause Ambience" : "Play Ambience"}
           >
-            {activeSounds.some(s => s.isPlaying) ? <Pause size={18} /> : <Play size={18} />}
+            {activeSounds.some(s => s.isPlaying) ? <Pause /> : <Play />}
             <span className="ambience-label">Ambience</span>
           </div>
         )}
 
         <div ref={aboutRef} className="header__icon-btn" onClick={toggleAbout}>
-          <User size={22} />
+          <User />
           {showAbout && (
             <div className="about-tooltip">
               <img
@@ -522,20 +522,20 @@ const Header = ({ toggleSidebar }) => {
           target="_blank"
           className="header__icon-btn"
         >
-          <Github size={22} />
+          <Github />
         </a>
         <a
           href="https://buymeacoffee.com/babariyameet"
           target="_blank"
           className="header__icon-btn"
         >
-          <DollarSign size={22} />
+          <DollarSign />
         </a>
         <a href="#" className="header__icon-btn">
-          <Linkedin size={22} />
+          <Linkedin />
         </a>
         <a href="#" className="header__icon-btn">
-          <Twitter size={22} />
+          <Twitter />
         </a>
 
         <div
@@ -543,11 +543,11 @@ const Header = ({ toggleSidebar }) => {
           className="header__icon-btn"
           onClick={toggleSocials}
         >
-          <InfoIcon size={22} />
+          <InfoIcon />
           {showSocials && (
             <div className="about-tooltip">
               <h3>
-                <PiIcon size={18} /> Socials / Support
+                <PiIcon /> Socials / Support
               </h3>
               <ul>
                 <li>

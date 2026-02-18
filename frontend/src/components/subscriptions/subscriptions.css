@@ -1,14 +1,14 @@
 .subscriptions {
   padding: 1rem;
-  background: var(--bg-primary, #1e1e2e);
-  color: var(--text-primary, #cdd6f4);
+  background: var(--bg-primary);
+  color: var(--text-primary);
   min-height: 100%;
 }
 
 .subscriptions h1 {
   margin: 0 0 2rem 0;
   font-size: 2rem;
-  color: var(--text-primary, #cdd6f4);
+  color: var(--text-primary);
 }
 
 .loading {
@@ -17,7 +17,7 @@
   align-items: center;
   height: 200px;
   font-size: 1.2rem;
-  color: var(--text-secondary, #a6adc8);
+  color: var(--text-secondary);
 }
 
 .subscriptions-header {
@@ -29,8 +29,8 @@
 
 .check-all-button {
   padding: 0.75rem 1.5rem;
-  background: var(--primary-color, #89b4fa);
-  color: var(--bg-primary, #1e1e2e);
+  background: var(--accent);
+  color: var(--bg-primary);
   border: none;
   border-radius: 6px;
   font-weight: 600;
@@ -40,13 +40,13 @@
 }
 
 .check-all-button:hover {
-  background: var(--primary-hover, #74c7ec);
+  background: var(--accent-hover);
 }
 
   .check-all-date-button {
     padding: 0.75rem 1.5rem;
-    background: var(--warning-color, #f9e2af);
-    color: var(--bg-primary, #1e1e2e);
+    background: var(--btn-trash);
+    color: var(--bg-primary);
     border: none;
     border-radius: 6px;
     font-weight: 600;
@@ -56,13 +56,14 @@
   }
 
   .check-all-date-button:hover {
-    background: #fca5a5;
+    background: var(--btn-trash);
+    opacity: 0.9;
   }
 
   .add-button {
     padding: 0.75rem 1.5rem;
-    background: var(--success-color, #a6e3a1);
-    color: var(--bg-primary, #1e1e2e);
+    background: var(--accent);
+    color: var(--bg-primary);
     border: none;
     border-radius: 6px;
     font-weight: 600;
@@ -72,21 +73,22 @@
   }
 
 .add-button:hover {
-  background: #94e2d5;
+  background: var(--accent-hover);
 }
 
 .add-form {
-  background: var(--card-bg, #181825);
+  background: var(--bg-card);
   border-radius: 8px;
   padding: 1.5rem;
   margin-bottom: 2rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--sidebar-border);
 }
 
 .add-form h2 {
   margin: 0 0 1.5rem 0;
   font-size: 1.5rem;
-  color: var(--text-primary, #cdd6f4);
+  color: var(--text-primary);
 }
 
 .form-group {
@@ -97,31 +99,31 @@
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 500;
-  color: var(--text-primary, #cdd6f4);
+  color: var(--text-primary);
 }
 
 .form-group input {
   width: 100%;
   padding: 0.75rem;
-  background: var(--bg-secondary, #313244);
-  color: var(--text-primary, #cdd6f4);
-  border: 1px solid var(--border-color, #45475a);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--sidebar-border);
   border-radius: 6px;
   font-size: 1rem;
 }
 
 .form-group input:focus {
   outline: none;
-  border-color: var(--primary-color, #89b4fa);
+  border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(137, 180, 250, 0.1);
 }
 
   .form-group select {
     width: 100%;
     padding: 0.75rem;
-    background: var(--bg-secondary, #313244);
-    color: var(--text-primary, #cdd6f4);
-    border: 1px solid var(--border-color, #45475a);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--sidebar-border);
     border-radius: 6px;
     font-size: 1rem;
     cursor: pointer;
@@ -129,7 +131,7 @@
 
   .form-group select:focus {
     outline: none;
-    border-color: var(--primary-color, #89b4fa);
+    border-color: var(--accent);
     box-shadow: 0 0 0 3px rgba(137, 180, 250, 0.1);
   }
 
@@ -146,8 +148,8 @@
   .error-message {
   padding: 0.75rem;
   background: rgba(243, 139, 168, 0.1);
-  color: var(--error-color, #f38ba8);
-  border: 1px solid var(--error-color, #f38ba8);
+  color: var(--btn-delete);
+  border: 1px solid var(--btn-delete);
   border-radius: 6px;
   margin-bottom: 1.5rem;
 }
@@ -162,8 +164,8 @@
   flex: 1;
   min-width: 150px;
   padding: 0.75rem;
-  background: var(--primary-color, #89b4fa);
-  color: var(--bg-primary, #1e1e2e);
+  background: var(--accent);
+  color: var(--bg-primary);
   border: none;
   border-radius: 6px;
   font-weight: 600;
@@ -173,7 +175,7 @@
 }
 
 .submit-button:hover:enabled {
-  background: var(--primary-hover, #74c7ec);
+  background: var(--accent-hover);
 }
 
 .submit-button:disabled {
@@ -185,9 +187,9 @@
   flex: 1;
   min-width: 150px;
   padding: 0.75rem;
-  background: var(--bg-secondary, #313244);
-  color: var(--text-primary, #cdd6f4);
-  border: 1px solid var(--border-color, #45475a);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--sidebar-border);
   border-radius: 6px;
   font-weight: 600;
   font-size: 1rem;
@@ -196,7 +198,7 @@
 }
 
 .cancel-button:hover:enabled {
-  background: var(--bg-hover, #313244);
+  background: var(--sidebar-hover);
 }
 
 .cancel-button:disabled {
@@ -210,7 +212,7 @@
   align-items: center;
   height: 200px;
   font-size: 1.2rem;
-  color: var(--text-secondary, #a6adc8);
+  color: var(--text-secondary);
   text-align: center;
 }
 
@@ -220,28 +222,29 @@
 }
 
 .subscription-card {
-  background: var(--card-bg, #181825);
+  background: var(--bg-card);
+  border: 1px solid var(--sidebar-border);
   border-radius: 8px;
   padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-md);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .subscription-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-md);
 }
 
 .subscription-info h3 {
   margin: 0 0 0.5rem 0;
   font-size: 1.5rem;
-  color: var(--text-primary, #cdd6f4);
+  color: var(--text-primary);
 }
 
 .channel-url {
   margin: 0 0 1.5rem 0;
   font-size: 0.9rem;
-  color: var(--text-secondary, #a6adc8);
+  color: var(--text-secondary);
   word-break: break-all;
 }
 
@@ -260,23 +263,23 @@
 
 .detail-item .label {
   font-size: 0.8rem;
-  color: var(--text-muted, #6c7086);
+  color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .detail-item .value {
   font-size: 0.9rem;
-  color: var(--text-primary, #cdd6f4);
+  color: var(--text-primary);
   font-weight: 500;
 }
 
 .detail-item .value.enabled {
-  color: var(--success-color, #a6e3a1);
+  color: var(--accent);
 }
 
 .detail-item .value.disabled {
-  color: var(--error-color, #f38ba8);
+  color: var(--btn-delete);
 }
 
 .detail-item.error {
@@ -284,7 +287,7 @@
 }
 
 .detail-item.error .value {
-  color: var(--error-color, #f38ba8);
+  color: var(--btn-delete);
 }
 
 .subscription-actions {
@@ -297,8 +300,8 @@
   flex: 1;
   min-width: 120px;
   padding: 0.75rem;
-  background: var(--primary-color, #89b4fa);
-  color: var(--bg-primary, #1e1e2e);
+  background: var(--accent);
+  color: var(--bg-primary);
   border: none;
   border-radius: 6px;
   font-weight: 600;
@@ -308,16 +311,16 @@
 }
 
 .check-button:hover {
-  background: var(--primary-hover, #74c7ec);
+  background: var(--accent-hover);
 }
 
 .toggle-auto-button {
   flex: 1;
   min-width: 120px;
   padding: 0.75rem;
-  background: var(--bg-secondary, #313244);
-  color: var(--text-primary, #cdd6f4);
-  border: 1px solid var(--border-color, #45475a);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--sidebar-border);
   border-radius: 6px;
   font-weight: 600;
   font-size: 0.9rem;
@@ -326,15 +329,15 @@
 }
 
 .toggle-auto-button:hover {
-  background: var(--bg-hover, #313244);
+  background: var(--sidebar-hover);
 }
 
 .delete-button {
   flex: 1;
   min-width: 120px;
   padding: 0.75rem;
-  background: var(--error-color, #f38ba8);
-  color: var(--bg-primary, #1e1e2e);
+  background: var(--btn-delete);
+  color: var(--bg-primary);
   border: none;
   border-radius: 6px;
   font-weight: 600;
@@ -347,8 +350,8 @@
     flex: 1;
     min-width: 120px;
     padding: 0.75rem;
-    background: var(--warning-color, #f9e2af);
-    color: var(--bg-primary, #1e1e2e);
+    background: var(--btn-trash);
+    color: var(--bg-primary);
     border: none;
     border-radius: 6px;
     font-weight: 600;
@@ -358,13 +361,13 @@
   }
 
   .check-date-button:hover {
-    background: #fca5a5;
+    background: var(--btn-delete);
   }
 
   .quality-select {
-    background: var(--bg-secondary, #313244);
-    color: var(--text-primary, #cdd6f4);
-    border: 1px solid var(--border-color, #45475a);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--sidebar-border);
     border-radius: 4px;
     padding: 0.25rem;
     font-size: 0.9rem;
@@ -377,7 +380,8 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
+    background: var(--overlay-bg);
+    backdrop-filter: blur(4px);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -385,7 +389,8 @@
   }
 
   .modal {
-    background: var(--card-bg, #181825);
+    background: var(--bg-card);
+    border: 1px solid var(--sidebar-border);
     border-radius: 8px;
     padding: 2rem;
     max-width: 500px;
@@ -396,12 +401,12 @@
   .modal h2 {
     margin: 0 0 1.5rem 0;
     font-size: 1.5rem;
-    color: var(--text-primary, #cdd6f4);
+    color: var(--text-primary);
   }
 
   .date-format-hint {
     font-size: 0.85rem;
-    color: var(--text-secondary, #a6adc8);
+    color: var(--text-secondary);
     margin-top: 0.5rem;
   }
 
@@ -415,9 +420,9 @@
   .date-input {
     width: 60px;
     padding: 0.5rem;
-    background: var(--bg-secondary, #313244);
-    color: var(--text-primary, #cdd6f4);
-    border: 1px solid var(--border-color, #45475a);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--sidebar-border);
     border-radius: 4px;
     font-size: 1rem;
     text-align: center;
@@ -429,13 +434,13 @@
 
   .date-separator {
     font-size: 1.2rem;
-    color: var(--text-secondary, #a6adc8);
+    color: var(--text-secondary);
     font-weight: bold;
   }
 
   .date-input:focus {
     outline: none;
-    border-color: var(--accent-color, #89b4fa);
+    border-color: var(--accent);
   }
 
   /* Remove number input arrows */
@@ -455,9 +460,9 @@
     align-self: flex-start;
     padding: 0.25rem 0.75rem;
     border-radius: 20px;
-    border: 1px solid var(--border-color, #45475a);
-    background: var(--bg-secondary, #313244);
-    color: var(--text-secondary, #a6adc8);
+    border: 1px solid var(--sidebar-border);
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
     font-size: 0.8rem;
     font-weight: 700;
     cursor: pointer;
@@ -467,15 +472,15 @@
   }
 
   .toggle-shorts-btn.active {
-    background: var(--warning-color, #f9e2af);
-    color: var(--bg-primary, #1e1e2e);
-    border-color: var(--warning-color, #f9e2af);
+    background: var(--btn-trash);
+    color: var(--bg-primary);
+    border-color: var(--btn-trash);
     box-shadow: 0 0 10px rgba(249, 226, 175, 0.2);
   }
 
   .toggle-shorts-btn:hover {
     transform: scale(1.05);
-    border-color: var(--warning-color, #f9e2af);
+    border-color: var(--btn-trash);
   }
 
   .filtering-toggles {
@@ -489,9 +494,9 @@
     align-self: flex-start;
     padding: 0.25rem 0.75rem;
     border-radius: 20px;
-    border: 1px solid var(--border-color, #45475a);
-    background: var(--bg-secondary, #313244);
-    color: var(--text-secondary, #a6adc8);
+    border: 1px solid var(--sidebar-border);
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
     font-size: 0.8rem;
     font-weight: 700;
     cursor: pointer;
@@ -501,21 +506,21 @@
   }
 
   .toggle-live-btn.active {
-    background: var(--error-color, #f38ba8);
-    color: var(--bg-primary, #1e1e2e);
-    border-color: var(--error-color, #f38ba8);
+    background: var(--btn-delete);
+    color: var(--bg-primary);
+    border-color: var(--btn-delete);
     box-shadow: 0 0 10px rgba(243, 139, 168, 0.2);
   }
 
   .toggle-live-btn:hover {
     transform: scale(1.05);
-    border-color: var(--error-color, #f38ba8);
+    border-color: var(--btn-delete);
   }
 
   .shorts-checkbox-group {
     margin-top: 1.5rem;
     padding-top: 1.25rem;
-    border-top: 1px solid var(--border-color, #45475a);
+    border-top: 1px solid var(--sidebar-border);
     display: flex;
     flex-direction: column;
     gap: 1rem;
@@ -527,7 +532,7 @@
     gap: 0.75rem;
     cursor: pointer;
     font-size: 1rem;
-    color: var(--text-primary, #cdd6f4);
+    color: var(--text-primary);
     user-select: none;
   }
 
@@ -535,11 +540,11 @@
     width: 20px;
     height: 20px;
     cursor: pointer;
-    accent-color: var(--accent-color, #89b4fa);
+    accent-color: var(--accent);
   }
 
   .checkbox-label:hover span {
-    color: var(--accent-color, #89b4fa);
+    color: var(--accent);
   }
 
 

@@ -4,15 +4,15 @@
   left: 0;
   bottom: 0;
   width: 72px;
-  background-color: #0f0f0f;
-  border-right: 1px solid #303030;
+  background-color: var(--sidebar-bg);
+  border-right: 1px solid var(--sidebar-border);
   overflow-y: auto;
-  transition: width 0.3s ease;
+  transition: width 0.3s ease, background-color 0.3s ease;
   z-index: 100;
 }
 
 .sidebar--open {
-  width: 240px;
+  width: var(--sidebar-open-width, 240px);
 }
 
 .sidebar__nav {
@@ -27,16 +27,13 @@
   font-size: 16px;
   font-weight: 500;
   padding: 8px 24px 6px;
-  color: #aaaaaa;
+  color: var(--text-secondary);
+  font-family: var(--font-sidebar-title);
   display: none;
 }
 
-.sidebar--open {
-  width: 240px; /* large */
-}
-
 .sidebar--hidden {
-  width: 0;      /* hidden */
+  width: 0;
   padding: 0;
   overflow: hidden;
 }
@@ -46,23 +43,25 @@
   align-items: center;
   padding: 10px 24px;
   text-decoration: none;
-  color: #ffffff;
+  color: var(--text-primary);
   cursor: pointer;
   transition: background-color 0.2s;
   white-space: nowrap;
+  font-family: var(--font-sidebar-label);
 }
 
 .sidebar__item:hover {
-  background-color: #272727;
+  background-color: var(--sidebar-hover);
 }
 
 .sidebar__item.active {
-  background-color: #272727;
+  background-color: var(--sidebar-active);
   font-weight: 500;
+  font-family: var(--font-sidebar-label);
 }
 
 .sidebar__item.active .sidebar__icon {
-  color: #00f;
+  color: var(--accent);
 }
 
 .sidebar__icon {
@@ -80,7 +79,8 @@
 }
 
 .sidebar__label {
-  font-size: 14px;
+  font-size: var(--sidebar-label-size);
+  font-family: var(--font-sidebar-label);
   opacity: 0.9;
   display: none;
 }
@@ -98,8 +98,8 @@
 }
 
 .sidebar__badge {
-  background: #ff0000;
-  color: white;
+  background: var(--badge-bg);
+  color: var(--bg-primary);
   font-size: 11px;
   font-weight: 600;
   padding: 2px 6px;
@@ -111,40 +111,8 @@
 
 .sidebar__divider {
   height: 1px;
-  background-color: #303030;
+  background-color: var(--sidebar-border);
   margin: 12px 0;
-}
-
-/* Trash item styling */
-.sidebar__item .sidebar__icon[data-icon="trash2"] {
-  color: #ff6b6b;
-}
-
-.sidebar__item.active .sidebar__icon[data-icon="trash2"] {
-  color: #ff0000;
-}
-
-/* Active state for trash */
-.sidebar__item[href*="/trash"].active {
-  background-color: rgba(255, 107, 107, 0.1);
-  border-left: 3px solid #ff0000;
-}
-
-@media (max-width: 768px) {
-  .sidebar {
-    width: 0;
-  }
-  
-  .sidebar--open {
-    width: 240px;
-  }
-  
-  /* Make badges more visible on mobile */
-  .sidebar__badge {
-    font-size: 10px;
-    padding: 1px 5px;
-    min-width: 16px;
-  }
 }
 
 /* Scrollbar styling for sidebar */
@@ -153,16 +121,16 @@
 }
 
 .sidebar::-webkit-scrollbar-track {
-  background: #0f0f0f;
+  background: var(--sidebar-bg);
 }
 
 .sidebar::-webkit-scrollbar-thumb {
-  background: #303030;
+  background: var(--sidebar-border);
   border-radius: 3px;
 }
 
 .sidebar::-webkit-scrollbar-thumb:hover {
-  background: #404040;
+  background: var(--border-color-hover);
 }
 
 /* Animation for badge when count changes */
@@ -179,7 +147,7 @@
 /* Active state for sidebar items */
 .sidebar__item.active .sidebar__label {
   font-weight: 600;
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 /* Hover effects */
@@ -189,33 +157,45 @@
 }
 
 /* Responsive adjustments */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 0;
+  }
+
+  .sidebar--open {
+    width: var(--sidebar-open-width, 240px);
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+  }
+
+  .sidebar__badge {
+    font-size: 10px;
+    padding: 1px 5px;
+    min-width: 16px;
+  }
+}
+
 @media (max-width: 480px) {
   .sidebar--open {
     width: 200px;
   }
-  
+
   .sidebar__item {
     padding: 10px 16px;
   }
-  
+
   .sidebar__icon {
     margin-right: 16px;
   }
-  
+
   .sidebar__label {
-    font-size: 13px;
+    font-size: var(--sidebar-label-size);
   }
-  
+
   .sidebar__title {
     padding: 8px 16px 6px;
     font-size: 14px;
   }
 }
 
-/* Ensure sidebar is above other content on mobile */
-@media (max-width: 768px) {
-  .sidebar--open {
-    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-  }
-}
+

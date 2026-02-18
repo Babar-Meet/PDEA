@@ -11,7 +11,8 @@ import {
   Download,
   Wind,
   Headphones,
-  Users
+  Users,
+  Palette
 } from 'lucide-react'
 import './Sidebar.css'
 
@@ -40,9 +41,9 @@ const Sidebar = ({ size, videos }) => {
   }, [])
 
   const mainItems = [
-    { icon: <Home size={24} />, label: 'Home', path: '/' },
-    { icon: <Headphones  size={24} />, label: 'Ambience', path: '/ambience' },
-    { icon: <Download size={24} />, label: 'Download', path: '/download' }
+    { icon: <Home />, label: 'Home', path: '/' },
+    { icon: <Headphones />, label: 'Ambience', path: '/ambience' },
+    { icon: <Download />, label: 'Download', path: '/download' }
   ]
 
   // Get all folders from videos (excluding thumbnails and playlist folders)
@@ -127,9 +128,9 @@ const Sidebar = ({ size, videos }) => {
 
   const libraryItems = [
     // { icon: <Folder size={24} />, label: 'My Videos', path: '/category/' },
-    { icon: <Folder size={24} />, label: 'All Videos', path: '/category/all' },
+    { icon: <Folder />, label: 'All Videos', path: '/category/all' },
     { 
-      icon: <Trash2 size={24} />, 
+      icon: <Trash2 />, 
       label: 'Trash', 
       path: '/trash',
       badge: trashCount > 0 ? trashCount : null
@@ -193,7 +194,7 @@ const Sidebar = ({ size, videos }) => {
                   className={`sidebar__item ${location.pathname === `/category/${encodeURIComponent(folder.path)}` ? 'active' : ''}`}
                 >
                   <span className="sidebar__icon">
-                    <FolderOpen size={24} />
+                    <FolderOpen />
                   </span>
                   <div className="sidebar__label-wrapper">
                     <span className="sidebar__label">{folder.name} ({folder.count})</span>
@@ -217,7 +218,7 @@ const Sidebar = ({ size, videos }) => {
                   className={`sidebar__item ${location.pathname === `/category/${encodeURIComponent(playlist.originalName)}` ? 'active' : ''}`}
                 >
                   <span className="sidebar__icon">
-                    <ListVideo size={24} />
+                    <ListVideo />
                   </span>
                   <div className="sidebar__label-wrapper">
                     <span className="sidebar__label">{playlist.displayName} ({playlist.count})</span>
@@ -240,7 +241,7 @@ const Sidebar = ({ size, videos }) => {
                 className={`sidebar__item ${location.pathname === `/category/${encodeURIComponent(channel.originalName)}` ? 'active' : ''}`}
               >
                 <span className="sidebar__icon">
-                  <Users size={24} />
+                  <Users />
                 </span>
                 <div className="sidebar__label-wrapper">
                   <span className="sidebar__label">{channel.displayName} ({channel.count})</span>
@@ -252,11 +253,21 @@ const Sidebar = ({ size, videos }) => {
 
         <div className="sidebar__divider" />
 
-        {/* More Options - Only Settings remains */}
+        {/* More Options */}
         <div className="sidebar__section">
-          <Link to="/VideoplayerSettings" className="sidebar__item">
-            <span className="sidebar__icon"><Settings size={24} /></span>
+          <Link
+            to="/VideoplayerSettings"
+            className={`sidebar__item ${location.pathname === '/VideoplayerSettings' ? 'active' : ''}`}
+          >
+            <span className="sidebar__icon"><Settings /></span>
             <span className="sidebar__label">Settings</span>
+          </Link>
+          <Link
+            to="/theme"
+            className={`sidebar__item ${location.pathname === '/theme' ? 'active' : ''}`}
+          >
+            <span className="sidebar__icon"><Palette /></span>
+            <span className="sidebar__label">Theme</span>
           </Link>
         </div>
 

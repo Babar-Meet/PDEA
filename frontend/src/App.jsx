@@ -3,6 +3,7 @@ import { API_BASE_URL } from "./config";
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import AmbienceSync from "./components/AmbienceSync/AmbienceSync";
 import DownloadPoller from "./components/DownloadPoller/DownloadPoller";
+import ThemeProvider from "./components/ThemeProvider/ThemeProvider";
 import Header from "./components/Header/Header";
 import Sidebar from "./components/Sidebar/Sidebar";
 import Home from "./pages/Home/Home";
@@ -13,6 +14,7 @@ import Trash from "./pages/Trash/Trash";
 import Download from "./pages/Download/Download";
 import Ambience from "./components/Ambience/Ambience";
 import ThumbnailGenerator from "./components/ThumbnailGenerator/ThumbnailGenerator";
+import Theme from "./pages/Theme/Theme";
 import "./App.css";
 
 function App() {
@@ -85,6 +87,7 @@ function App() {
 
   return (
     <>
+      <ThemeProvider />
       <AmbienceSync />
       <DownloadPoller />
       <Router>
@@ -190,6 +193,10 @@ function AppContent({
             <Route
               path="/ambience"
               element={<Ambience />}
+            />
+            <Route
+              path="/theme"
+              element={<Theme />}
             />
           </Routes>
         </div>

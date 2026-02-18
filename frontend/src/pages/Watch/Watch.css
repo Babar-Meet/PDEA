@@ -5,7 +5,7 @@
 }
 
 .watch.cinema-mode {
-  grid-template-areas: 
+  grid-template-areas:
     "player player"
     "details sidebar";
   grid-template-columns: 1fr 400px;
@@ -46,7 +46,6 @@
   flex-direction: column;
 }
 
-
 .watch__player {
   border-radius: 12px;
   overflow: hidden;
@@ -54,7 +53,7 @@
 }
 
 .watch__details {
-  background-color: #0f0f0f;
+  background-color: var(--bg-primary);
   border-radius: 12px;
   padding: 20px;
 }
@@ -63,31 +62,31 @@
   font-size: 24px;
   font-weight: 700;
   margin-bottom: 10px;
-  color: #ffffff;
+  color: var(--text-primary);
   line-height: 1.4;
 }
 
 .watch__stats {
   display: flex;
   gap: 15px;
-  color: #aaaaaa;
+  color: var(--text-secondary);
   font-size: 14px;
   margin-bottom: 20px;
   padding-bottom: 20px;
-  border-bottom: 1px solid #303030;
+  border-bottom: 1px solid var(--sidebar-border);
 }
 
-/* NEW: Navigation info */
+/* Navigation info */
 .watch__navigation-info {
   margin: 10px 0;
   padding: 10px;
-  background: rgba(187, 209, 228, 0.1);
+  background: var(--bg-input);
   border-radius: 8px;
-  border-left: 3px solid #aaaaaa;
+  border-left: 3px solid var(--text-secondary);
 }
 
 .nav-info-text {
-  color: #ffffff;
+  color: var(--text-primary);
   font-size: 13px;
   font-weight: 500;
 }
@@ -100,12 +99,14 @@
   gap: 12px;
   margin-bottom: 20px;
   padding-bottom: 20px;
-  border-bottom: 1px solid #303030;
+  border-bottom: 1px solid var(--sidebar-border);
 }
+
 .watch__actions > .cinema-toggle-btn {
   margin-left: auto;
   flex: 0 0 auto;
 }
+
 .watch__left-actions {
   display: flex;
   gap: 10px;
@@ -113,70 +114,56 @@
   flex: 1 1 auto;
 }
 
-/* old code in case want it back
-.watch__actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #303030;
-}
-
-.watch__left-actions {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-} */
-
 .action-btn {
   display: flex;
   align-items: center;
   gap: 8px;
-  background-color: #272727;
-  border: none;
-  color: #ffffff;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
   padding: 8px 16px;
   border-radius: 20px;
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, border-color 0.2s;
 }
 
 .action-btn:hover {
-  background-color: #3d3d3d;
+  background-color: var(--sidebar-hover);
+  border-color: var(--border-color-hover);
 }
 
 .like-btn {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: var(--bg-input);
 }
 
-/* NEW: Navigation buttons */
+/* Navigation buttons */
 .nav-btn {
-  background-color: #272727;
-  color: #ffffff;
+  background-color: var(--bg-card);
+  color: var(--text-primary);
   border: 1px solid rgba(62, 166, 255, 0.3);
 }
 
 .nav-btn:hover {
-  background-color: #3d3d3d;
+  background-color: var(--sidebar-hover);
 }
 
 .cinema-toggle-btn.active {
-  background-color: #3ea6ff;
-  color: #000;
+  background-color: var(--accent);
+  color: var(--bg-primary);
+  border-color: var(--accent);
 }
 
 .cinema-toggle-btn.active:hover {
-  background-color: #65b8ff;
+  background-color: var(--accent-hover);
 }
 
-
 .watch__channel {
-  background-color: #181818;
+  background-color: var(--bg-card);
   border-radius: 8px;
   padding: 20px;
+  border: 1px solid var(--border-color);
 }
 
 .channel__info {
@@ -201,16 +188,16 @@
   font-size: 16px;
   font-weight: 600;
   margin-bottom: 4px;
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .channel__subs {
   font-size: 12px;
-  color: #aaaaaa;
+  color: var(--text-secondary);
 }
 
 .channel__subscribe {
-  background-color: #ff0000;
+  background-color: var(--btn-delete);
   color: #ffffff;
   border: none;
   padding: 10px 20px;
@@ -222,25 +209,26 @@
 }
 
 .channel__subscribe:hover {
-  background-color: #cc0000;
+  opacity: 0.85;
 }
 
 .watch__description {
-  background-color: #212121;
+  background-color: var(--bg-card);
   padding: 15px;
   border-radius: 8px;
   font-size: 14px;
   line-height: 1.6;
+  border: 1px solid var(--border-color);
 }
 
 .description__text {
-  color: #ffffff;
+  color: var(--text-primary);
   margin-bottom: 10px;
   font-weight: 500;
 }
 
 .description__more {
-  color: #aaaaaa;
+  color: var(--text-secondary);
 }
 
 .watch__sidebar {
@@ -256,21 +244,21 @@
   justify-content: center;
   min-height: 400px;
   text-align: center;
-  color: #aaaaaa;
+  color: var(--text-secondary);
 }
 
 .watch__loading .loading-spinner {
   width: 50px;
   height: 50px;
-  border: 4px solid #303030;
-  border-top: 4px solid #ff0000;
+  border: 4px solid var(--sidebar-border);
+  border-top: 4px solid var(--accent);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 20px;
 }
 
 .watch__not-found h2 {
-  color: #ffffff;
+  color: var(--text-primary);
   margin-bottom: 10px;
   font-size: 24px;
 }
@@ -279,7 +267,7 @@
   .watch {
     grid-template-columns: 1fr;
   }
-  
+
   .watch__sidebar {
     position: static;
     height: auto;
@@ -293,17 +281,16 @@
     gap: 15px;
     align-items: stretch;
   }
-  
+
   .watch__left-actions {
     flex-wrap: wrap;
   }
-  
+
   .action-btn {
     flex: 1;
     justify-content: center;
   }
 }
-/* Add these to your existing Watch.css */
 
 .watch__meta {
   margin-bottom: 16px;
@@ -315,7 +302,7 @@
   gap: 8px;
   margin-top: 8px;
   font-size: 14px;
-  color: #aaaaaa;
+  color: var(--text-secondary);
 }
 
 .folder-label {
@@ -323,18 +310,19 @@
 }
 
 .folder-path {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  background: var(--bg-input);
   padding: 2px 8px;
   border-radius: 12px;
   font-family: 'Courier New', monospace;
   font-size: 12px;
   word-break: break-all;
+  border: 1px solid var(--border-color);
 }
 
 .watch__category {
   background: rgba(62, 166, 255, 0.1);
-  color: #3ea6ff;
+  color: var(--accent);
   padding: 4px 10px;
   border-radius: 12px;
   font-size: 12px;
@@ -350,20 +338,19 @@
 }
 
 .watch__tags .tag {
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.8);
+  background: var(--bg-input);
+  color: var(--text-primary);
   padding: 4px 10px;
   border-radius: 16px;
   font-size: 12px;
   font-weight: 500;
+  border: 1px solid var(--border-color);
   transition: background-color 0.2s;
 }
 
 .watch__tags .tag:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--sidebar-hover);
 }
-
-/* Add to existing Watch.css */
 
 /* Modal Styles */
 .modal-overlay {
@@ -372,7 +359,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.8);
+  background-color: rgba(0, 0, 0, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -381,13 +368,13 @@
 }
 
 .modal-content {
-  background-color: #1a1a1a;
+  background-color: var(--bg-secondary);
   border-radius: 12px;
   padding: 24px;
   max-width: 500px;
   width: 100%;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  border: 1px solid #333;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border-color);
 }
 
 .modal-header {
@@ -396,11 +383,11 @@
   gap: 12px;
   margin-bottom: 20px;
   padding-bottom: 16px;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .modal-header h3 {
-  color: #ffffff;
+  color: var(--text-primary);
   font-size: 20px;
   font-weight: 600;
   margin: 0;
@@ -411,13 +398,13 @@
 }
 
 .modal-body p {
-  color: #cccccc;
+  color: var(--text-secondary);
   margin-bottom: 12px;
   line-height: 1.5;
 }
 
 .modal-body strong {
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .warning-text {
@@ -459,49 +446,52 @@
 }
 
 .cancel-btn {
-  background-color: #333;
-  color: #ffffff;
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
 }
 
 .cancel-btn:hover:not(:disabled) {
-  background-color: #444;
+  background-color: var(--sidebar-hover);
 }
 
 .trash-btn {
-  background-color: #ff9900;
+  background-color: var(--btn-trash);
   color: #000000;
 }
 
 .trash-btn:hover:not(:disabled) {
-  background-color: #ffaa33;
+  opacity: 0.85;
 }
 
 .delete-btn {
-  background-color: #ff0000;
+  background-color: var(--btn-delete);
   color: #ffffff;
 }
 
 .delete-btn:hover:not(:disabled) {
-  background-color: #ff3333;
+  opacity: 0.85;
 }
 
 /* Action Button Styles */
 .watch__actions .trash-btn {
-  background-color: rgba(255, 153, 0, 0.2);
-  color: #ff9900;
+  background-color: rgba(255, 153, 0, 0.15);
+  color: var(--btn-trash);
+  border-color: rgba(255, 153, 0, 0.3);
 }
 
 .watch__actions .trash-btn:hover {
-  background-color: rgba(255, 153, 0, 0.3);
+  background-color: rgba(255, 153, 0, 0.25);
 }
 
 .watch__actions .delete-btn {
-  background-color: rgba(255, 0, 0, 0.2);
-  color: #ff0000;
+  background-color: rgba(255, 0, 0, 0.15);
+  color: var(--btn-delete);
+  border-color: rgba(255, 0, 0, 0.3);
 }
 
 .watch__actions .delete-btn:hover {
-  background-color: rgba(255, 0, 0, 0.3);
+  background-color: rgba(255, 0, 0, 0.25);
 }
 
 /* Video Card Menu Styles */
@@ -513,12 +503,12 @@
   position: absolute;
   top: 100%;
   right: 0;
-  background-color: #1a1a1a;
+  background-color: var(--bg-secondary);
   border-radius: 8px;
   padding: 8px 0;
   min-width: 180px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-  border: 1px solid #333;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-color);
   z-index: 10;
   display: none;
 }
@@ -532,7 +522,7 @@
   align-items: center;
   gap: 10px;
   padding: 10px 16px;
-  color: #cccccc;
+  color: var(--text-secondary);
   text-decoration: none;
   border: none;
   background: none;
@@ -543,21 +533,21 @@
 }
 
 .menu-item:hover {
-  background-color: #333;
-  color: #ffffff;
+  background-color: var(--sidebar-hover);
+  color: var(--text-primary);
 }
 
 .menu-item.trash-item {
-  color: #ff9900;
+  color: var(--btn-trash);
 }
 
 .menu-item.delete-item {
-  color: #ff0000;
+  color: var(--btn-delete);
 }
 
 .menu-divider {
   height: 1px;
-  background-color: #333;
+  background-color: var(--border-color);
   margin: 4px 0;
 }
 
@@ -566,15 +556,15 @@
   .watch__actions .watch__left-actions {
     flex-wrap: wrap;
   }
-  
+
   .modal-content {
     padding: 16px;
   }
-  
+
   .modal-actions {
     flex-direction: column;
   }
-  
+
   .modal-btn {
     width: 100%;
   }

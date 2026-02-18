@@ -1,3 +1,41 @@
+/* ─── CSS Custom Properties (Theme Tokens) ─────────────────────────────────── */
+/* These are the dark theme defaults. ThemeProvider overrides them at runtime. */
+:root {
+  --bg-primary:         #0f0f0f;
+  --bg-secondary:       #1a1a1a;
+  --bg-card:            #1f1f1f;
+  --bg-input:           rgba(255,255,255,0.05);
+  --text-primary:       #ffffff;
+  --text-secondary:     #aaaaaa;
+  --accent:             #3ea6ff;
+  --accent-hover:       #65b8ff;
+  --sidebar-bg:         #0f0f0f;
+  --sidebar-border:     #303030;
+  --sidebar-hover:      #272727;
+  --sidebar-active:     #272727;
+  --border-color:       rgba(255,255,255,0.1);
+  --border-color-hover: rgba(255,255,255,0.2);
+  --btn-trash:          #ff9900;
+  --btn-delete:         #ff0000;
+  --badge-bg:           #ff0000;
+  --font-family:        'Roboto', sans-serif;
+  --font-header:        'Roboto', sans-serif;
+  --font-title:         'Roboto', sans-serif;
+  --font-sidebar:       'Roboto', sans-serif;
+  --font-sidebar-title: 'Roboto', sans-serif;
+  --font-sidebar-label: 'Roboto', sans-serif;
+  --sidebar-label-size: 14px;
+  --font-size-base:     14px;
+  --card-min-width:     300px;
+  --sidebar-open-width: 240px;
+  --icon-size:          24px;
+  --radius-card:        12px;
+  --radius-btn:         8px;
+  --shadow-sm:         0 2px 8px rgba(0,0,0,0.5);
+  --shadow-md:         0 4px 16px rgba(0,0,0,0.6);
+  --overlay-bg:        rgba(0,0,0,0.8);
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -5,14 +43,26 @@
 }
 
 body {
-  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #0f0f0f;
-  color: #ffffff;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   overflow-x: hidden;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+/* Global Font Size & Family Override */
+h1, h2, h3, h4, h5, h6, p, span, div, button, input, select, textarea {
+  font-size: inherit;
+  font-family: inherit;
+}
+
+/* Global Icon Size Override */
+svg.lucide, .lucide {
+  width: var(--icon-size) !important;
+  height: var(--icon-size) !important;
 }
 
 #root {
@@ -22,20 +72,17 @@ body {
 /* Scrollbar Styling */
 ::-webkit-scrollbar {
   width: 9px;
-  height: px;
+  height: 9px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0f0f0f;
+  background: var(--bg-primary);
 }
 
-
-/* just removed it to make side bar hidden */
-
-/* ::-webkit-scrollbar-thumb {
-  background: #888;
+::-webkit-scrollbar-thumb {
+  background: var(--sidebar-border);
   border-radius: 5px;
-} */
+}
 
 ::-webkit-scrollbar-thumb:hover {
   background: #555;

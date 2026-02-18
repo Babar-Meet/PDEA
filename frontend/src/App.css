@@ -15,7 +15,7 @@
   padding-left: 90px; /* small sidebar width + extra padding */
   transition: padding-left 0.3s ease;
   overflow-y: auto;
-  background-color: #0f0f0f;
+  background-color: var(--bg-primary);
   min-height: calc(100vh - 56px); /* Full height minus header */
 }
 

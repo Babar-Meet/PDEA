@@ -1,6 +1,6 @@
 .download-nav-bar {
-  background: var(--card-bg, #0f0f0f);
-  border-bottom: 1px solid var(--border-color, #313244);
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--sidebar-border);
   padding: 0 1rem;
 }
 
@@ -16,7 +16,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
-  color: var(--text-secondary, #cdd6f4);
+  color: var(--text-secondary);
   text-decoration: none;
   border-radius: 8px;
   transition: all 0.2s ease;
@@ -25,14 +25,14 @@
 }
 
 .download-nav-item:hover {
-  background: var(--hover-bg, #313244);
-  color: var(--text-primary, #cdd6f4);
+  background: var(--sidebar-hover);
+  color: var(--text-primary);
 }
 
 .download-nav-item.active {
-  background: var(--primary-color, #89b4fa);
-  color: var(--bg-primary, #1e1e2e);
-  border-color: var(--primary-color, #89b4fa);
+  background: var(--accent);
+  color: var(--bg-primary);
+  border-color: var(--accent);
 }
 
 .nav-icon {

@@ -21,7 +21,7 @@
 }
 
 .settings-header p {
-  color: #777;
+  color: var(--text-secondary);
   font-size: 1.1rem;
 }
 
@@ -37,8 +37,8 @@
 }
 
 .settings-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
   border-radius: 16px;
   padding: 24px;
 }
@@ -53,7 +53,7 @@
 
 .card-header h2 {
   font-size: 1.2rem;
-  color: #eee;
+  color: var(--text-primary);
   margin: 0;
 }
 
@@ -69,20 +69,20 @@
   font-size: 1rem;
   font-weight: 600;
   margin-bottom: 4px;
-  color: #fff;
+  color: var(--text-primary);
 }
 
 .setting-info p {
   font-size: 0.9rem;
-  color: #777;
+  color: var(--text-secondary);
   margin: 0;
 }
 
 .setting-input {
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
-  color: #fff;
+  color: var(--text-primary);
   padding: 8px 12px;
   width: 80px;
   font-size: 1rem;
@@ -112,7 +112,7 @@
   justify-content: space-between;
   align-items: center;
   padding-top: 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid var(--border-color);
 }
 
 .footer-actions {
@@ -157,8 +157,8 @@
 
 .reset-btn {
   background: transparent;
-  color: #aaa;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -168,8 +168,8 @@
 }
 
 .reset-btn:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: #fff;
+  background: var(--sidebar-hover);
+  color: var(--text-primary);
 }
 
 .status-message {

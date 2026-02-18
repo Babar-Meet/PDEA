@@ -19,7 +19,7 @@
   font-size: 2.8rem;
   font-weight: 800;
   letter-spacing: -1px;
-  background: linear-gradient(90deg, #89b4fa, #cba6f7);
+  background: var(--accent);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -44,8 +44,8 @@
 }
 
 .refresh-button {
-  background: linear-gradient(135deg, #89b4fa 0%, #74c7ec 100%);
-  color: #11111b;
+  background: var(--accent);
+  color: var(--bg-primary);
 }
 
 .refresh-button:hover {
@@ -54,8 +54,8 @@
 }
 
 .cancel-all-button {
-  background: linear-gradient(135deg, #f38ba8 0%, #eba0ac 100%);
-  color: #11111b;
+  background: var(--btn-delete);
+  color: var(--bg-primary);
 }
 
 .cancel-all-button:hover:not(:disabled) {
@@ -76,11 +76,11 @@
   align-items: center;
   height: 300px;
   font-size: 1.3rem;
-  color: #a6adc8;
+  color: var(--text-secondary);
   font-weight: 500;
-  background: rgba(49, 50, 68, 0.2);
+  background: var(--bg-input);
   border-radius: 24px;
-  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border: 1px dashed var(--border-color);
 }
 
 .new-videos-grid {
@@ -90,12 +90,12 @@
 }
 
 .new-video-card {
-  background: #181825;
+  background: var(--bg-card);
   border-radius: 24px;
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  border: 1px solid rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
   position: relative;
 }
 
@@ -113,7 +113,7 @@
   width: 100%;
   aspect-ratio: 16 / 9;
   overflow: hidden;
-  background: #1e1e2e;
+  background: var(--bg-secondary);
   position: relative;
 }
 
@@ -132,8 +132,8 @@
   position: absolute;
   top: 12px;
   right: 12px;
-  background: linear-gradient(135deg, #a6e3a1 0%, #94e2d5 100%);
-  color: #11111b;
+  background: var(--accent);
+  color: var(--bg-primary);
   padding: 0.4rem 0.8rem;
   border-radius: 8px;
   font-size: 0.75rem;
@@ -154,8 +154,8 @@
   position: absolute;
   top: 12px;
   left: 12px;
-  background: linear-gradient(135deg, #fab387 0%, #f9e2af 100%);
-  color: #11111b;
+  background: var(--btn-trash);
+  color: var(--bg-primary);
   padding: 0.3rem 0.7rem;
   border-radius: 8px;
   font-size: 0.7rem;
@@ -170,8 +170,8 @@
   position: absolute;
   top: 12px;
   left: 70px; /* Offset from Shorts badge */
-  background: linear-gradient(135deg, #f38ba8 0%, #eba0ac 100%);
-  color: #11111b;
+  background: var(--btn-delete);
+  color: var(--bg-primary);
   padding: 0.3rem 0.7rem;
   border-radius: 8px;
   font-size: 0.7rem;
@@ -190,7 +190,8 @@
   margin: 0 0 0.75rem 0;
   font-size: 1.25rem;
   font-weight: 700;
-  color: #cdd6f4;
+  color: var(--text-primary);
+  font-family: var(--font-title);
   line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -204,13 +205,13 @@
   margin: 0 0 0.4rem 0;
   font-size: 0.95rem;
   font-weight: 600;
-  color: #bac2de;
+  color: var(--text-primary);
 }
 
 .upload-date {
   margin: 0;
   font-size: 0.85rem;
-  color: #7f849c;
+  color: var(--text-secondary);
 }
 
 .video-actions {
@@ -222,9 +223,9 @@
 .download-button {
   flex: 2;
   padding: 0.85rem;
-  background: rgba(137, 180, 250, 0.1);
-  color: #89b4fa;
-  border: 1.5px solid #89b4fa;
+  background: var(--bg-input);
+  color: var(--accent);
+  border: 1.5px solid var(--accent);
   border-radius: 12px;
   font-weight: 700;
   font-size: 0.9rem;
@@ -240,9 +241,9 @@
 .cancel-button {
   flex: 1;
   padding: 0.85rem;
-  background: rgba(243, 139, 168, 0.05);
-  color: #f38ba8;
-  border: 1.5px solid rgba(243, 139, 168, 0.3);
+  background: var(--bg-input);
+  color: var(--btn-delete);
+  border: 1.5px solid var(--btn-delete);
   border-radius: 12px;
   font-weight: 700;
   font-size: 0.9rem;
