@@ -34,7 +34,7 @@
   bottom: 0;
   left: 0;
   right: 0;
-  background: linear-gradient(transparent, var(--overlay-bg));
+  background: var(--player-gradient);
   padding: 20px;
   opacity: 0;
   transition: opacity 0.3s;

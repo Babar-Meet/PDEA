@@ -25,6 +25,7 @@
   --font-sidebar-title: 'Roboto', sans-serif;
   --font-sidebar-label: 'Roboto', sans-serif;
   --sidebar-label-size: 14px;
+  --player-gradient:    linear-gradient(transparent, rgba(0,0,0,0.8));
   --font-size-base:     14px;
   --card-min-width:     300px;
   --sidebar-open-width: 240px;
