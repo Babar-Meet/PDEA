@@ -573,13 +573,12 @@ const PlaylistDownload = () => {
       {playlistVideos.length > 0 && processingStatus === 'done' && (
         <div className="action-footer">
           <div className="dir-selector-wrapper">
-            <div className="dir-selector" style={{ background: 'rgba(255,255,255,0.05)', padding: '10px 15px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div className="dir-selector">
                 <Folder size={20} color="#aaa" />
                 <select 
                   value={selectedDir} 
                   onChange={(e) => setSelectedDir(e.target.value)}
                   className="dir-select"
-                  style={{ background: 'none', border: 'none', color: 'white', outline: 'none', cursor: 'pointer' }}
                   disabled={showNewDirInput}
                 >
                   {directories.map(dir => (
@@ -589,14 +588,13 @@ const PlaylistDownload = () => {
                 <button 
                   className={`new-dir-toggle ${showNewDirInput ? 'active' : ''}`}
                   onClick={() => setShowNewDirInput(!showNewDirInput)}
-                  style={{ background: 'none', border: 'none', color: '#aaa', cursor: 'pointer' }}
                 >
                   <Plus size={18} />
                 </button>
             </div>
             
             {showNewDirInput && (
-              <div className="new-dir-input-container" style={{ marginTop: 8 }}>
+              <div className="new-dir-input-container">
                 <input 
                   type="text" 
                   className="new-dir-input" 
@@ -604,7 +602,6 @@ const PlaylistDownload = () => {
                   value={newDirName}
                   onChange={(e) => setNewDirName(e.target.value)}
                   autoFocus
-                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid #3ea6ff', borderRadius: 8, padding: '8px 12px', color: 'white', width: '100%' }}
                 />
               </div>
             )}

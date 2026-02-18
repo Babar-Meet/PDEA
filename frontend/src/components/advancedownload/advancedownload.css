@@ -249,21 +249,56 @@
   animation: slideUp 0.3s ease-out;
 }
 
+/* Modern Directory Selector */
 .dir-selector {
   flex: 1;
   display: flex;
   align-items: center;
   gap: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 6px 16px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dir-selector:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.dir-selector:focus-within {
+  border-color: #3ea6ff;
+  background: rgba(62, 166, 255, 0.05);
+  box-shadow: 0 0 0 2px rgba(62, 166, 255, 0.2);
 }
 
 .dir-select {
   flex: 1;
-  padding: 10px;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 6px;
-  color: white;
-  font-size: 14px;
+  padding: 6px 40px 6px 16px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%233ea6ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0 center;
+  background-size: 18px;
+}
+
+.dir-select:focus {
+  outline: none;
+}
+
+.dir-select option {
+  background: #1f1f1f;
+  color: #fff;
+  padding: 12px 20px; /* Added indentation */
 }
 
 .download-btn {
@@ -426,18 +461,20 @@
   gap: 8px;
 }
 
+/* Toggle Button inside the selector */
 .new-dir-toggle {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #aaa;
-  width: 36px;
-  height: 36px;
-  border-radius: 6px;
+  background: transparent;
+  border: none;
+  color: #888;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s;
+  margin-left: 4px;
 }
 
 .new-dir-toggle:hover {
@@ -448,7 +485,7 @@
 .new-dir-toggle.active {
   background: #3ea6ff;
   color: black;
-  border-color: #3ea6ff;
+  box-shadow: 0 2px 8px rgba(62, 166, 255, 0.3);
 }
 
 .new-dir-input-container {
